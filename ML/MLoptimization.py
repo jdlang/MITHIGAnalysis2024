@@ -146,7 +146,7 @@ def plot_xgb_feature_importance(model,
     plt.ylabel("Features")
     plt.grid(True, axis="x", alpha=0.5)
     plt.tight_layout()
-    plt.savefig("feature_importance..png", dpi=300, bbox_inches="tight")
+    plt.savefig("feature_importance.png", dpi=300, bbox_inches="tight")
 
     return importances
 
@@ -207,7 +207,11 @@ df_background["label"] = 0
 df_combined = pd.concat([df_signal, df_background], axis=0).reset_index(drop=True)
 
 # features are the variables used for the optimization
-features = ["Dchi2cl", "Dalpha", "DsvpvSign", "Dtrk1Pt", "Dtrk2Pt"]
+# "Dmass", "Dchi2cl", "Dpt", "Dy", "Dtrk1Pt", "Dtrk2Pt", "DsvpvDistance", "DsvpvDisErr",
+# "DsvpvDistance_2D", "DsvpvDisErr_2D", "Dalpha", "Ddtheta", "Dgen", "DisSignalCalc",
+# "DisSignalCalcPrompt", "DisSignalCalcFeeddown", "DpassCut23LowPt"
+#features = ["Dchi2cl", "Dalpha", "DsvpvSign", "Dtrk1Pt", "Dtrk2Pt"]
+features = ["Dchi2cl", "Dalpha", "DsvpvSign", "Dtrk1Pt", "Dtrk2Pt", "Dy"]
 
 # Split features (X) and labels (y)
 X = df_combined[features]
@@ -225,7 +229,7 @@ model = xgb.XGBClassifier(
     n_jobs=10,
     gamma=0.0,
     min_child_weight=3,
-    subsample=0.8,
+    subsample=1.0,
     colsample_bytree=0.8,
     colsample_bynode=1,
     random_state=0,
@@ -272,3 +276,6 @@ plt.ylabel("True Positive Rate")
 plt.title("ROC Curve")
 plt.legend(loc="lower right")
 plt.savefig("roccurve.png", dpi=300, bbox_inches="tight")
+
+print(f"ptmin: {ptmin:.1f}, ptmax: {ptmax:.1f}, ymin: {ymin:.1f}, ymax: {ymax:.1f}, ROC AUC: {auc_score_test:.4f}")
+
