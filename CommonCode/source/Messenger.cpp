@@ -2823,6 +2823,8 @@ DzeroUPCTreeMessenger::~DzeroUPCTreeMessenger()
       delete DpassCut23LowPt;
       delete DpassCut23PASSystDsvpvSig;
       delete DpassCut23PASSystDtrkPt;
+      delete DpassCut23PASSystDalpha;
+      delete DpassCut23PASSystDchi2cl;
       delete Dy;
       delete Dmass;
       delete Dtrk1Pt;
@@ -2871,6 +2873,8 @@ bool DzeroUPCTreeMessenger::Initialize(bool Debug)
    DpassCut23LowPt = nullptr;
    DpassCut23PASSystDsvpvSig = nullptr;
    DpassCut23PASSystDtrkPt = nullptr;
+   DpassCut23PASSystDalpha = nullptr;
+   DpassCut23PASSystDchi2cl = nullptr;
    Dy = nullptr;
    Dmass = nullptr;
    Dtrk1Pt = nullptr;
@@ -2948,6 +2952,8 @@ bool DzeroUPCTreeMessenger::Initialize(bool Debug)
    Tree->SetBranchAddress("DpassCut23LowPt", &DpassCut23LowPt);
    Tree->SetBranchAddress("DpassCut23PASSystDsvpvSig", &DpassCut23PASSystDsvpvSig);
    Tree->SetBranchAddress("DpassCut23PASSystDtrkPt", &DpassCut23PASSystDtrkPt);
+   Tree->SetBranchAddress("DpassCut23PASSystDalpha", &DpassCut23PASSystDalpha);
+   Tree->SetBranchAddress("DpassCut23PASSystDchi2cl", &DpassCut23PASSystDchi2cl);
    Tree->SetBranchAddress("Dgen", &Dgen);
    Tree->SetBranchAddress("DisSignalCalc", &DisSignalCalc);
    Tree->SetBranchAddress("DisSignalCalcPrompt", &DisSignalCalcPrompt);
@@ -2992,6 +2998,8 @@ bool DzeroUPCTreeMessenger::SetBranch(TTree *T)
    DpassCut23LowPt = new std::vector<bool>();
    DpassCut23PASSystDsvpvSig = new std::vector<bool>();
    DpassCut23PASSystDtrkPt = new std::vector<bool>();
+   DpassCut23PASSystDalpha = new std::vector<bool>();
+   DpassCut23PASSystDchi2cl = new std::vector<bool>();
    Dy = new std::vector<float>();
    Dmass = new std::vector<float>();
    Dtrk1Pt = new std::vector<float>();
@@ -3073,6 +3081,8 @@ bool DzeroUPCTreeMessenger::SetBranch(TTree *T)
    Tree->Branch("DpassCut23LowPt",       &DpassCut23LowPt);
    Tree->Branch("DpassCut23PASSystDsvpvSig",&DpassCut23PASSystDsvpvSig);
    Tree->Branch("DpassCut23PASSystDtrkPt",&DpassCut23PASSystDtrkPt);
+   Tree->Branch("DpassCut23PASSystDalpha",&DpassCut23PASSystDalpha);
+   Tree->Branch("DpassCut23PASSystDchi2cl",&DpassCut23PASSystDchi2cl);
    Tree->Branch("Dgen",                  &Dgen);
    Tree->Branch("DisSignalCalc",         &DisSignalCalc);
    Tree->Branch("DisSignalCalcPrompt",   &DisSignalCalcPrompt);
@@ -3142,6 +3152,8 @@ void DzeroUPCTreeMessenger::Clear()
    DpassCut23LowPt->clear();
    DpassCut23PASSystDsvpvSig->clear();
    DpassCut23PASSystDtrkPt->clear();
+   DpassCut23PASSystDalpha->clear();
+   DpassCut23PASSystDchi2cl->clear();
    Dgen->clear();
    DisSignalCalc->clear();
    DisSignalCalcPrompt->clear();
@@ -3206,6 +3218,8 @@ void DzeroUPCTreeMessenger::CopyNonTrack(DzeroUPCTreeMessenger &M)
    if(DpassCut23LowPt != nullptr && M.DpassCut23LowPt != nullptr)   *DpassCut23LowPt = *(M.DpassCut23LowPt);
    if(DpassCut23PASSystDsvpvSig != nullptr && M.DpassCut23PASSystDsvpvSig != nullptr)   *DpassCut23PASSystDsvpvSig = *(M.DpassCut23PASSystDsvpvSig);
    if(DpassCut23PASSystDtrkPt != nullptr && M.DpassCut23PASSystDtrkPt != nullptr)   *DpassCut23PASSystDtrkPt = *(M.DpassCut23PASSystDtrkPt);
+   if(DpassCut23PASSystDalpha != nullptr && M.DpassCut23PASSystDalpha != nullptr)   *DpassCut23PASSystDalpha = *(M.DpassCut23PASSystDalpha);
+   if(DpassCut23PASSystDchi2cl != nullptr && M.DpassCut23PASSystDchi2cl != nullptr)   *DpassCut23PASSystDchi2cl = *(M.DpassCut23PASSystDchi2cl);
    if(Dgen != nullptr && M.Dgen != nullptr)   *Dgen = *(M.Dgen);
    if(DisSignalCalc != nullptr && M.DisSignalCalc != nullptr)   *DisSignalCalc = *(M.DisSignalCalc);
    if(DisSignalCalcPrompt != nullptr && M.DisSignalCalcPrompt != nullptr)   *DisSignalCalcPrompt = *(M.DisSignalCalcPrompt);
