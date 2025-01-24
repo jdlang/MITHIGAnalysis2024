@@ -1,5 +1,11 @@
+#!/bin/bash
+
 #source clean.sh
 FitSettingCard=${1}
+if [ -z "$FitSettingCard" ]; then
+  echo "Requires fit setting card as input argument."
+  exit 1
+fi
 FitDir=$(jq -r '.FitDir' $FitSettingCard)
 
 # Extract the directory path for fullAnalysis

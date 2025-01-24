@@ -1,5 +1,11 @@
+#!/bin/bash
+
 #source clean.sh
 SampleSettingCard=${1}
+if [ -z "$SampleSettingCard" ]; then
+  echo "Requires sample setting card as input argument."
+  exit 1
+fi
 MicroTreeDir=$(jq -r '.MicroTreeDir' $SampleSettingCard)
 mkdir -p $MicroTreeDir
 cp $SampleSettingCard $MicroTreeDir/sampleConfig.json
