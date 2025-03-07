@@ -24,7 +24,6 @@ jq -c '.Plots[]' $PlotSettingCard | while read Plot; do
 	wSystMassWindow=$(echo $Plot | jq -r '.wSystMassWindow')
 	nominalSampleRST=$(echo $Plot | jq -r '.nominalSampleRST')
 	nominalFitRST=$(echo $Plot | jq -r '.nominalFitRST')
- 	doAsymSyst=$(echo $Plot | jq -r '.doAsymSyst')
 
   cmd="./PlotCrossSection --PlotDir $PlotDir --MinDzeroPT $MinDzeroPT --MaxDzeroPT $MaxDzeroPT --IsGammaN $IsGammaN --InputPoints $InputPoints"
       [ "$UseMaxFitUncert" != "null" ] && cmd="$cmd --UseMaxFitUncert $UseMaxFitUncert"
@@ -40,7 +39,6 @@ jq -c '.Plots[]' $PlotSettingCard | while read Plot; do
 			[ "$wSystMassWindow" != "null" ] && cmd="$cmd --wSystMassWindow $wSystMassWindow"
 			[ "$nominalSampleRST" != "null" ] && cmd="$cmd --nominalSampleRST $nominalSampleRST"
 			[ "$nominalFitRST" != "null" ] && cmd="$cmd --nominalFitRST $nominalFitRST"
-			[ "$doAsymSyst" != "null" ] && cmd="$cmd --doAsymSyst $doAsymSyst"
 
   echo "Executing >>>>>>"
   echo $cmd
