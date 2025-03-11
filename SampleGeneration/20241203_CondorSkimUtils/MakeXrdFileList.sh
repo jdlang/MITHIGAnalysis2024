@@ -27,7 +27,7 @@ while read -r LINE; do
     echo "$XROOTD_SERVER/$LINE" >> "$TEMP_LIST"
     wait
     FILE_COUNTER=$((FILE_COUNTER + 1))
-    if ! (( $FILE_COUNTER % 100 )); then
+    if ! (( $FILE_COUNTER % 1000 )); then
       echo "Found $FILE_COUNTER files..."
     fi
   else
