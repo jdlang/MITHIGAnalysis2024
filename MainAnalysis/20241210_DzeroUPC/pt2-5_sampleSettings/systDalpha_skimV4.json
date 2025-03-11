@@ -15,7 +15,7 @@
     },
     {
       "MicroTreeBaseName": "MC.root",
-      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamA/mergedfile.root",
+      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250324_v4_Pthat0_ForceD0Decay_BeamA/mergedfile.root",
       "MinDzeroPT": 2,
       "MaxDzeroPT": 5,
       "MinDzeroY": -2,
@@ -51,7 +51,7 @@
     },
     {
       "MicroTreeBaseName": "MC.root",
-      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamA/mergedfile.root",
+      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250324_v4_Pthat0_ForceD0Decay_BeamA/mergedfile.root",
       "MinDzeroPT": 2,
       "MaxDzeroPT": 5,
       "MinDzeroY": -1,
@@ -87,7 +87,7 @@
     },
     {
       "MicroTreeBaseName": "MC.root",
-      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamA/mergedfile.root",
+      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250324_v4_Pthat0_ForceD0Decay_BeamA/mergedfile.root",
       "MinDzeroPT": 2,
       "MaxDzeroPT": 5,
       "MinDzeroY": 0,
@@ -123,7 +123,7 @@
     },
     {
       "MicroTreeBaseName": "MC.root",
-      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamA/mergedfile.root",
+      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250324_v4_Pthat0_ForceD0Decay_BeamA/mergedfile.root",
       "MinDzeroPT": 2,
       "MaxDzeroPT": 5,
       "MinDzeroY": 1,
@@ -159,7 +159,7 @@
     },
     {
       "MicroTreeBaseName": "MC.root",
-      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamB/mergedfile.root",
+      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250324_v4_Pthat0_ForceD0Decay_BeamB/mergedfile.root",
       "MinDzeroPT": 2,
       "MaxDzeroPT": 5,
       "MinDzeroY": -2,
@@ -195,7 +195,7 @@
     },
     {
       "MicroTreeBaseName": "MC.root",
-      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamB/mergedfile.root",
+      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250324_v4_Pthat0_ForceD0Decay_BeamB/mergedfile.root",
       "MinDzeroPT": 2,
       "MaxDzeroPT": 5,
       "MinDzeroY": -1,
@@ -231,7 +231,7 @@
     },
     {
       "MicroTreeBaseName": "MC.root",
-      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamB/mergedfile.root",
+      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250324_v4_Pthat0_ForceD0Decay_BeamB/mergedfile.root",
       "MinDzeroPT": 2,
       "MaxDzeroPT": 5,
       "MinDzeroY": 0,
@@ -267,7 +267,7 @@
     },
     {
       "MicroTreeBaseName": "MC.root",
-      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamB/mergedfile.root",
+      "Input": "/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250324_v4_Pthat0_ForceD0Decay_BeamB/mergedfile.root",
       "MinDzeroPT": 2,
       "MaxDzeroPT": 5,
       "MinDzeroY": 1,
