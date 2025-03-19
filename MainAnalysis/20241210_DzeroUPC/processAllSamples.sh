@@ -4,16 +4,16 @@
 # optional flag: -d <config_dir> , uses different config directory from default
 # optional flag: -c , runs clean.sh before processing configs
 
-CONFIG_DIR="pt2-5_sampleSettings"
-JSON_VERSION="_skimV4"
-CONFIG_LIST=(
-  "fullAnalysis$JSON_VERSION.json"
-  "systDalpha$JSON_VERSION.json"
-  "systDchi2cl$JSON_VERSION.json"
-  "systDsvpv$JSON_VERSION.json"
-  "systDtrkPt$JSON_VERSION.json"
-  "systRapGapLoose$JSON_VERSION.json"
-  "systRapGapTight$JSON_VERSION.json"
+SAMPLE_DIR="pt2-5_sampleSettings"
+SAMPLE_VERSION="_skimV4"
+SAMPLE_LIST=(
+  "fullAnalysis$SAMPLE_VERSION.json"
+  "systDalpha$SAMPLE_VERSION.json"
+  "systDchi2cl$SAMPLE_VERSION.json"
+  "systDsvpv$SAMPLE_VERSION.json"
+  "systDtrkPt$SAMPLE_VERSION.json"
+  "systRapGapLoose$SAMPLE_VERSION.json"
+  "systRapGapTight$SAMPLE_VERSION.json"
 )
 DO_CLEAN=0
 
@@ -21,7 +21,7 @@ DO_CLEAN=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -d)
-      CONFIG_DIR="$2"
+      SAMPLE_DIR="$2"
       shift 2
       ;;
     -c|--clean)
@@ -40,10 +40,10 @@ fi
 
 # Process configs
 echo ""
-echo "Config directory: $CONFIG_DIR"
+echo "Config directory: $SAMPLE_DIR"
 echo ""
-for CONFIG_JSON in ${CONFIG_LIST[@]}; do
-    bash makeMicroTree.sh $CONFIG_DIR/$CONFIG_JSON
+for SAMPLE_JSON in ${SAMPLELIST[@]}; do
+    bash makeMicroTree.sh $SAMPLE_DIR/$SAMPLE_JSON
     wait
 done
 wait

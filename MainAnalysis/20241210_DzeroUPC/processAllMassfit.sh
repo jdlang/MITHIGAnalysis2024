@@ -4,21 +4,21 @@
 # optional flag: -d <config_dir> , uses different config directory from default
 # optional flag: -c , runs clean.sh before processing configs
 
-CONFIG_DIR="pt2-5_fitSettings"
-JSON_VERSION="_useGammaNForNgammaForFitFunc"
-CONFIG_LIST=(
-  "fullAnalysis$JSON_VERSION.json"
-  "systDalpha$JSON_VERSION.json"
-  "systDchi2cl$JSON_VERSION.json"
-  "systDsvpv$JSON_VERSION.json"
-  "systDtrkPt$JSON_VERSION.json"
-  "systFitComb$JSON_VERSION.json"
-  "systFitPkBg$JSON_VERSION.json"
-  "systFitSigAlpha$JSON_VERSION.json"
-  "systFitSigMean$JSON_VERSION.json"
-  "systMassWindow$JSON_VERSION.json"
-  "systRapGapLoose$JSON_VERSION.json"
-  "systRapGapTight$JSON_VERSION.json"
+MASSFIT_DIR="pt2-5_massfitSettings"
+MASSFIT_VERSION="_useGammaNForNgammaForFitFunc"
+MASSFIT_LIST=(
+  "fullAnalysis$MASSFIT_VERSION.json"
+  "systDalpha$MASSFIT_VERSION.json"
+  "systDchi2cl$MASSFIT_VERSION.json"
+  "systDsvpv$MASSFIT_VERSION.json"
+  "systDtrkPt$MASSFIT_VERSION.json"
+  "systFitComb$MASSFIT_VERSION.json"
+  "systFitPkBg$MASSFIT_VERSION.json"
+  "systFitSigAlpha$MASSFIT_VERSION.json"
+  "systFitSigMean$MASSFIT_VERSION.json"
+  "systMassWindow$MASSFIT_VERSION.json"
+  "systRapGapLoose$MASSFIT_VERSION.json"
+  "systRapGapTight$MASSFIT_VERSION.json"
 )
 DO_CLEAN=0
 
@@ -26,7 +26,7 @@ DO_CLEAN=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -d)
-      CONFIG_DIR="$2"
+      MASSFIT_DIR="$2"
       shift 2
       ;;
     -c|--clean)
@@ -45,13 +45,14 @@ fi
 
 # Process configs
 echo ""
-echo "Config directory: $CONFIG_DIR"
+echo "Config directory: $MASSFIT_DIR"
 echo ""
-for CONFIG_JSON in ${CONFIG_LIST[@]}; do
-  bash massfit.sh $CONFIG_DIR/$CONFIG_JSON
+for MASSFIT_JSON in ${MASSFIT_LIST[@]}; do
+  bash massfit.sh $MASSFIT_DIR/$MASSFIT_JSON
   wait
 done
 wait
+
 bash plot.sh "pt2-5_plotSettings/fullAnalysis.json"
 root -l -b -q plotCompareDataMCmass.cpp
 root -l -b -q plotMassfitSignalStudy.cpp
