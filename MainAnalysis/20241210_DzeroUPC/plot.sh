@@ -39,6 +39,7 @@ jq -c '.Plots[]' $PlotSettingCard | while read Plot; do
 			[ "$wSystMassWindow" != "null" ] && cmd="$cmd --wSystMassWindow $wSystMassWindow"
 			[ "$nominalSampleRST" != "null" ] && cmd="$cmd --nominalSampleRST $nominalSampleRST"
 			[ "$nominalFitRST" != "null" ] && cmd="$cmd --nominalFitRST $nominalFitRST"
+			[ "$nominalFitRST" != "null" ] && cmd="$cmd --nominalFitRST $nominalFitRST"
 
   echo "Executing >>>>>>"
   echo $cmd
