@@ -91,6 +91,11 @@ class DataAnalyzer {
 public:
   TFile *inf, *outf;
   TH1D *hDmass;
+  TH1D *hDtrk1Pt;
+  TH1D *hDtrk2Pt;
+  TH1D *hDsvpvSig;
+  TH1D *hDalpha;
+  TH1D *hDchi2cl;
   DzeroUPCTreeMessenger *MDzeroUPC;
   TNtuple *nt;
   string title;
@@ -121,6 +126,11 @@ public:
   void analyze(Parameters &par) {
     outf->cd();
     hDmass = new TH1D(Form("hDmass%s", title.c_str()), "", DMASSNBINS, DMASSMIN, DMASSMAX);
+    hDtrk1Pt = new TH1D(Form("hDtrk1Pt%s", title.c_str()), "", 50, 0.0, 5.0);
+    hDtrk2Pt = new TH1D(Form("hDtrk2Pt%s", title.c_str()), "", 50, 0.0, 5.0);
+    hDsvpvSig = new TH1D(Form("hDsvpvSig%s", title.c_str()), "", 50, 0.0, 5.0);
+    hDalpha = new TH1D(Form("hDalpha%s", title.c_str()), "", 32, 0.0, 3.2);
+    hDchi2cl = new TH1D(Form("hDchi2cl%s", title.c_str()), "", 20, 0.0, 1.0);
     hDenEvtEff = new TH1D(Form("hDenEvtEff%s", title.c_str()), "", 1, 0.5, 1.5);
     hNumEvtEff = new TH1D(Form("hNumEvtEff%s", title.c_str()), "", 1, 0.5, 1.5);
     hRatioEvtEff = (TH1D*) hNumEvtEff->Clone("hRatioEvtEff");
@@ -140,6 +150,11 @@ public:
     }
 
     hDmass->Sumw2();
+    hDtrk1Pt->Sumw2();
+    hDtrk2Pt->Sumw2();
+    hDsvpvSig->Sumw2();
+    hDalpha->Sumw2();
+    hDchi2cl->Sumw2();
     hDenEvtEff->Sumw2();
     hNumEvtEff->Sumw2();
     hDenDEff->Sumw2();
@@ -225,8 +240,25 @@ public:
           if (par.DoSystD==2 && MDzeroUPC->DpassCut23PASSystDtrkPt->at(j) == false) continue;
           if (par.DoSystD==3 && MDzeroUPC->DpassCut23PASSystDalpha->at(j) == false) continue;
           if (par.DoSystD==4 && MDzeroUPC->DpassCut23PASSystDchi2cl->at(j) == false) continue;
+          
+          // explicit DtrkPt filter (should not trigger if DtrkPtCut is not set)
+          if (MDzeroUPC->Dtrk1Pt->at(j) < par.DtrkPtCut || MDzeroUPC->Dtrk2Pt->at(j) < par.DtrkPtCut) continue;
+          
+          // explicit Dsvpv filter (should not trigger if DsvpvCut is not set)
+          if ((MDzeroUPC->DsvpvDistance->at(j)/MDzeroUPC->DsvpvDisErr->at(j)) < par.DsvpvCut) continue;
+
+          // explicit Dalpha filter (should not trigger if DalphaCut is not set)
+          if (par.DalphaCut > 0. && MDzeroUPC->Dalpha->at(j) > par.DalphaCut) continue;
+          
+          // explicit Dchi2cl filter (should not trigger if DalphaCut is not set)
+          if (MDzeroUPC->Dchi2cl->at(j) < par.Dchi2Cut) continue;
 
           hDmass->Fill((*MDzeroUPC->Dmass)[j]);
+          hDtrk1Pt->Fill((*MDzeroUPC->Dtrk1Pt)[j]);
+          hDtrk2Pt->Fill((*MDzeroUPC->Dtrk2Pt)[j]);
+          hDsvpvSig->Fill((*MDzeroUPC->DsvpvDistance)[j]/(*MDzeroUPC->DsvpvDisErr)[j]);
+          hDalpha->Fill((*MDzeroUPC->Dalpha)[j]);
+          hDchi2cl->Fill((*MDzeroUPC->Dchi2cl)[j]);
           if (!par.IsData) {
             nt->Fill((*MDzeroUPC->Dmass)[j], (*MDzeroUPC->Dgen)[j]);
             if (MDzeroUPC->Dgen->at(j) == 23333) {
@@ -269,6 +301,11 @@ public:
   void writeHistograms(TFile *outf) {
     outf->cd();
     smartWrite(hDmass);
+    smartWrite(hDtrk1Pt);
+    smartWrite(hDtrk2Pt);
+    smartWrite(hDsvpvSig);
+    smartWrite(hDalpha);
+    smartWrite(hDchi2cl);
     hRatioEvtEff->Divide(hNumEvtEff, hDenEvtEff, 1, 1, "B");
     hRatioDEff->Divide(hNumDEff, hDenDEff, 1, 1, "B");
     hDenEvtEff->Write();
@@ -285,6 +322,11 @@ public:
 private:
   void deleteHistograms() {
     delete hDmass;
+    delete hDtrk1Pt;
+    delete hDtrk2Pt;
+    delete hDsvpvSig;
+    delete hDalpha;
+    delete hDchi2cl;
     delete hDenEvtEff;
     delete hNumEvtEff;
     delete hRatioEvtEff;
@@ -324,12 +366,23 @@ int main(int argc, char *argv[]) {
   string GptGyWeightFileName= CL.Get      ("GptGyWeightFileName", "../../WeightHandler/20250305_DzeroUPC_GptGyWeight/Weights/testWeight.root");
   bool DoMultReweighting   = CL.GetBool  ("DoMultReweighting", false);
   string MultWeightFileName= CL.Get      ("MultWeightFileName", "../../WeightHandler/20250312_DzeroUPC_multiplicityWeight/Weights/testWeight.root");
-
+  
+  float DtrkPtCut = CL.GetDouble("DtrkPtCut", -1.0);  // Track pt cut. If >=0, overwrites DoSystD.
+  float DsvpvCut = CL.GetDouble("DsvpvCut", -1.0);    // Track decay length cut. If >=0, overwrites DoSystD.
+  float DalphaCut = CL.GetDouble("DalphaCut", -1.0);  // Alpha cut. If > 0, overwrites DoSystD.
+  float Dchi2Cut = CL.GetDouble("Dchi2Cut", -1.0);    // Dchi2cl cut. If > 0, overwrites DoSystD.
+  if (DsvpvCut >= 0.) DoSystD = 1;
+  if (DtrkPtCut >= 0.) DoSystD = 2;
+  if (DalphaCut > 0.) DoSystD = 3;
+  if (Dchi2Cut >= 0.) DoSystD = 4;
+  
   bool IsData = CL.GetBool("IsData", 0);              // Data or MC
+  
   Parameters par(MinDzeroPT, MaxDzeroPT, MinDzeroY, MaxDzeroY, IsGammaN, TriggerChoice, IsData, scaleFactor,
                  DoSystRapGap, DoSystD,
                  DoGptGyReweighting, GptGyWeightFileName,
-                 DoMultReweighting, MultWeightFileName);
+                 DoMultReweighting, MultWeightFileName,
+                 DoSystRapGap, DoSystD, DtrkPtCut, DsvpvCut, DalphaCut, Dchi2Cut);
   par.input = CL.Get("Input", "mergedSample.root"); // Input file
   par.output = CL.Get("Output", "output.root");     // Output file
   par.nThread = CL.GetInt("nThread", 1);            // The number of threads to be used for parallel processing.

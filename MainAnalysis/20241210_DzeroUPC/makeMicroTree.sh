@@ -22,6 +22,10 @@ jq -c '.MicroTrees[]' $SampleSettingCard | while read MicroTree; do
 	GptGyWeightFileName=$(echo $MicroTree | jq -r '.GptGyWeightFileName')
 	DoMultReweighting=$(echo $MicroTree | jq -r '.DoMultReweighting')
 	MultWeightFileName=$(echo $MicroTree | jq -r '.MultWeightFileName')
+  DtrkPtCut=$(echo $MicroTree | jq -r '.DtrkPtCut // -1')
+  DsvpvCut=$(echo $MicroTree | jq -r '.DsvpvCut // -1')
+  DalphaCut=$(echo $MicroTree | jq -r '.DalphaCut // -1')
+  Dchi2Cut=$(echo $MicroTree | jq -r '.Dchi2Cut // -1')
 	mkdir -p $MicroTreeDir/pt${MinDzeroPT}-${MaxDzeroPT}_y${MinDzeroY}-${MaxDzeroY}_IsGammaN${IsGammaN}/
 	Output=$MicroTreeDir/pt${MinDzeroPT}-${MaxDzeroPT}_y${MinDzeroY}-${MaxDzeroY}_IsGammaN${IsGammaN}/${MicroTreeBaseName}
 
@@ -39,6 +43,10 @@ jq -c '.MicroTrees[]' $SampleSettingCard | while read MicroTree; do
 			[ $GptGyWeightFileName != null ] && cmd="$cmd --GptGyWeightFileName $GptGyWeightFileName"
 			[ $DoMultReweighting != null ] && cmd="$cmd --DoMultReweighting $DoMultReweighting"
 			[ $MultWeightFileName != null ] && cmd="$cmd --MultWeightFileName $MultWeightFileName"
+      [ $DtrkPtCut != null ] && cmd="$cmd --DtrkPtCut $DtrkPtCut"
+      [ $DsvpvCut != null ] && cmd="$cmd --DsvpvCut $DsvpvCut"
+      [ $DalphaCut != null ] && cmd="$cmd --DalphaCut $DalphaCut"
+      [ $Dchi2Cut != null ] && cmd="$cmd --Dchi2Cut $Dchi2Cut"
 
 	echo "Executing >>>>>>"
 	echo $cmd

@@ -9,8 +9,10 @@ public:
     Parameters( float MinDzeroPT, float MaxDzeroPT, float MinDzeroY, float MaxDzeroY, bool IsGammaN, int TriggerChoice, bool IsData, float scaleFactor = 1.0,
                 int in_DoSystRapGap = 0, int in_DoSystD = 0,
                 bool in_DoGptGyReweighting = false, string in_GptGyWeightFileName = "",
-                bool in_DoMultReweighting = false, string in_MultWeightFileName = "" )
-	: MinDzeroPT(MinDzeroPT), MaxDzeroPT(MaxDzeroPT), MinDzeroY(MinDzeroY), MaxDzeroY(MaxDzeroY), IsGammaN(IsGammaN), TriggerChoice(TriggerChoice), IsData(IsData), scaleFactor(scaleFactor)
+                bool in_DoMultReweighting = false, string in_MultWeightFileName = "" ,
+                float DtrkPtCut = -1., float DsvpvCut = -1.,
+                float DalphaCut = -1., float Dchi2Cut = -1.)
+	: MinDzeroPT(MinDzeroPT), MaxDzeroPT(MaxDzeroPT), MinDzeroY(MinDzeroY), MaxDzeroY(MaxDzeroY), IsGammaN(IsGammaN), TriggerChoice(TriggerChoice), IsData(IsData), scaleFactor(scaleFactor), DtrkPtCut(DtrkPtCut), DsvpvCut(DsvpvCut), DalphaCut(DalphaCut), Dchi2Cut(Dchi2Cut)
     {
         if (in_DoSystRapGap > 9) {
             // Custom HF energy threshold will be set to in_DoSystRapGap/10.
@@ -48,6 +50,19 @@ public:
             DoMultReweighting  = false;
             MultWeightFileName = "";
         }
+        
+        if (DtrkPtCut >= 0.) {
+            printf("[INFO] Applying custom DtrkPt cut: %f", DtrkPtCut);
+        }
+        if (DsvpvCut >= 0.) {
+            printf("[INFO] Applying custom Dsvpv cut: %f", DsvpvCut);
+        }
+        if (DalphaCut > 0.) {
+            printf("[INFO] Applying custom Dalpha cut: %f", DalphaCut);
+        }
+        if (Dchi2Cut >= 0.) {
+            printf("[INFO] Applying custom Dalpha cut: %f", DalphaCut);
+        }
     }
     Parameters() {}
    string input;          // Input file name
@@ -66,13 +81,17 @@ public:
    int DoSystD;           // Systematic study: apply the alternative D selections
                           // 0 = nominal, 1 = Dsvpv variation, 2: DtrkPt variation
                           // 3 = Dalpha variation, 4: Dchi2cl variation
+   
    bool DoGptGyReweighting;      // MC reweighting:: Gpt, Gy
    string GptGyWeightFileName;   // MC reweighting:: Gpt, Gy correction factor
    bool DoMultReweighting;       // MC reweighting:: Mult
-   string MultWeightFileName;    // MC reweighting:: Mult correction factor 
-
-
-
+   string MultWeightFileName;    // MC reweighting:: Mult correction factor
+   
+   float DtrkPtCut;       // Cut on Dtrk1Pt && Dtrk2Pt
+   float DsvpvCut;        // Cut on Dsvpv
+   float DalphaCut;       // Cut on Dalpha
+   float Dchi2Cut;        // Cut on Dchi2cl
+   
    int nThread;           // Number of Threads
    int nChunk;            // Process the Nth chunk
    void printParameters() const {
@@ -99,6 +118,10 @@ public:
        cout << "GptGyWeightFileName: " << GptGyWeightFileName << endl;
        cout << "DoMultReweighting: " << DoMultReweighting << endl;
        cout << "MultWeightFileName: " << MultWeightFileName << endl;
+       if (DtrkPtCut >= 0.) cout << "DtrkPtCut: " << Form("%f", DtrkPtCut) << endl;
+       if (DsvpvCut >= 0.) cout << "DsvpvCut: " << Form("%f", DsvpvCut) << endl;
+       if (DalphaCut > 0.) cout << "DalphaCut: " << Form("%f", DalphaCut) << endl;
+       if (Dchi2Cut >= 0.) cout << "Dchi2Cut: " << Form("%f", Dchi2Cut) << endl;
        cout << "Number of Threads: " << nThread << endl;
        cout << "Process the Nth chunk: " << nChunk << endl;
 
@@ -135,6 +158,14 @@ void saveParametersToHistograms(const Parameters& par, TFile* outf) {
     hDoGptGyReweighting->SetBinContent(1, par.DoGptGyReweighting);
     TH1D* hDoMultReweighting = new TH1D("parDoMultReweighting", "parDoMultReweighting", 1, 0, 1);
     hDoMultReweighting->SetBinContent(1, par.DoMultReweighting);
+    TH1D* hDtrkPtCut = new TH1D("parDtrkPtCut", "parDtrkPtCut", 1, 0, 1);
+    hDtrkPtCut->SetBinContent(1, par.DtrkPtCut);
+    TH1D* hDsvpvCut = new TH1D("parDsvpvCut", "parDsvpvCut", 1, 0, 1);
+    hDsvpvCut->SetBinContent(1, par.DsvpvCut);
+    TH1D* hDalphaCut = new TH1D("parDalphaCut", "parDalphaCut", 1, 0, 1);
+    hDalphaCut->SetBinContent(1, par.DalphaCut);
+    TH1D* hDchi2Cut = new TH1D("parDchi2Cut", "parDchi2Cut", 1, 0, 1);
+    hDchi2Cut->SetBinContent(1, par.Dchi2Cut);
 
     // Write histograms to the output file
     hMinDzeroPT->Write();
@@ -149,6 +180,10 @@ void saveParametersToHistograms(const Parameters& par, TFile* outf) {
     hDoSystD->Write();
     hDoGptGyReweighting->Write();
     hDoMultReweighting->Write();
+    hDtrkPtCut->Write();
+    hDsvpvCut->Write();
+    hDalphaCut->Write();
+    hDchi2Cut->Write();
 
     // Clean up
     delete hMinDzeroPT;
@@ -163,4 +198,8 @@ void saveParametersToHistograms(const Parameters& par, TFile* outf) {
     delete hDoSystD;
     delete hDoGptGyReweighting;
     delete hDoMultReweighting;
+    delete hDtrkPtCut;
+    delete hDsvpvCut;
+    delete hDalphaCut;
+    delete hDchi2Cut;
 }

@@ -42,7 +42,7 @@ using namespace std;
 #define DMASS 1.86484
 #define DMASSMIN 1.66
 #define DMASSMAX 2.16
-#define DMASSNBINS 48
+#define DMASSNBINS 40
 
 struct ParamsBase {
   std::map<std::string, RooRealVar*> params; // Store RooRealVar objects

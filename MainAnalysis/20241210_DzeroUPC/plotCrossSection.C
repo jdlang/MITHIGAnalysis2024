@@ -28,7 +28,8 @@ int main(int argc, char *argv[])
   float MinDzeroPT = CL.GetDouble("MinDzeroPT", 2);  // Minimum Dzero transverse momentum threshold for Dzero selection.
   float MaxDzeroPT = CL.GetDouble("MaxDzeroPT", 5);  // Maximum Dzero transverse momentum threshold for Dzero selection.
   bool IsGammaN = CL.GetBool("IsGammaN", true);      // GammaN analysis (or NGamma)
-  bool UseMaxFitUncert = CL.GetBool("UseMaxFitUncert", false);
+  bool UseMaxFitUncert = CL.GetBool("UseMaxFitUncert", true);
+  bool UseSystFitComb = CL.GetBool("UseSystFitComb", false);
 
   vector<string> inputPoints      = CL.GetStringVector("InputPoints",    ""); // Input corrected yields md files
 
@@ -45,7 +46,7 @@ int main(int argc, char *argv[])
   string         wSystFitSigAlpha = CL.Get    ("wSystFitSigAlpha", "MassFit_systFitSigAlpha"); // Include fit systematics of different signal modeling. The input is the fit directory name
   // string         wSystFitComb     = CL.Get    ("wSystFitComb", "MassFit_systComb");// Include fit systematics of different combinatorics modeling. The input is the fit directory name
   string         wSystFitPkBg     = CL.Get    ("wSystFitPkBg", "MassFit_systPkBg");// Include fit systematics of different background KK and pipi peak modeling. The input is the fit directory name
-  string         wSystMassWindow  = CL.Get    ("wSystMassWindow", "MassFit_systMassWindow");
+  string         wSystMassWindow  = CL.Get    ("wSystMassWindow", "MassFit_systMassWindow040");
   string         nominalSampleRST = CL.Get    ("nominalSampleRST", "fullAnalysis");// Nominal sample directory name
   string         nominalFitRST    = CL.Get    ("nominalFitRST", "MassFit");        // Nominal fit directory name
 
@@ -209,7 +210,8 @@ int main(int argc, char *argv[])
     systDchi2clUncert[i]  = TMath::Abs(systDchi2clCorrectedYieldValues[i] - correctedYieldValues[i]);
     systFitSigMeanUncert[i]  = TMath::Abs(systFitSigMeanCorrectedYieldValues[i] - correctedYieldValues[i]);
     systFitSigAlphaUncert[i] = TMath::Abs(systFitSigAlphaCorrectedYieldValues[i] - correctedYieldValues[i]);
-    // systFitCombUncert[i]  = TMath::Abs(systFitCombCorrectedYieldValues[i] - correctedYieldValues[i]);
+    if (UseSystFitComb) systFitCombUncert[i]  = TMath::Abs(systFitCombCorrectedYieldValues[i] - correctedYieldValues[i]);
+    else systFitCombUncert[i] = 0.;
     systFitPkBgUncert[i]  = TMath::Abs(systFitPkBgCorrectedYieldValues[i] - correctedYieldValues[i]);
     systMassWindowUncert[i]  = TMath::Abs(systMassWindowCorrectedYieldValues[i] - correctedYieldValues[i]);
     systFitUncert[i]      = TMath::Sqrt(
@@ -267,7 +269,7 @@ int main(int argc, char *argv[])
   printRatioArr(systTotUncert, correctedYieldValues,          "  ", " Total        ", "  ");
   printRatioArr(systFitSigMeanUncert, correctedYieldValues,   "  ", " Fit:SigMean  ", "  ");
   printRatioArr(systFitSigAlphaUncert, correctedYieldValues,  "  ", " Fit:SigAlpha ", "  ");
-  // printRatioArr(systFitCombUncert, correctedYieldValues,      "  ", " Fit:Comb     ", "  ");
+  if (UseSystFitComb) printRatioArr(systFitCombUncert, correctedYieldValues,      "  ", " Fit:Comb     ", "  ");
   printRatioArr(systFitPkBgUncert, correctedYieldValues,      "  ", " Fit:PkBg     ", "  ");
   printRatioArr(systMassWindowUncert, correctedYieldValues,   "  ", " Fit:MassWin  ", "  ");
   printArr(systTotUncert, ", ", "systTotUncert: ");
