@@ -7,6 +7,7 @@
 #include <TCanvas.h>
 #include <TLatex.h>
 #include <TLegend.h>
+#include <TLine.h>
 
 #include <RooAddPdf.h>
 #include <RooAbsPdf.h>
@@ -19,6 +20,8 @@
 #include <RooFitResult.h>
 #include <RooPlot.h>
 #include <RooWorkspace.h>
+#include <RooHist.h>
+#include <RooCurve.h>
 
 #include "CommandLine.h" // Yi's Commandline bundle
 
@@ -663,7 +666,7 @@ void main_fit(TTree *datatree, string rstDir, string output,
   TCanvas* canvas = new TCanvas("canvas", "Fit Plot", 800, 600);
   // Define the mass range and variables
   RooRealVar m("Dmass", "Mass [GeV]", DmassMin, DmassMax);
-
+  
   // Import data
   RooDataSet _data("data", "dataset", RooArgSet(m), Import(*datatree));
   RooDataSet& data = *( (RooDataSet*) _data.reduce(Form("Dmass > %f && Dmass < %f ", DmassMin, DmassMax)));
@@ -780,20 +783,56 @@ void main_fit(TTree *datatree, string rstDir, string output,
   frame->SetTitle(plotTitle.c_str());
   printf("Plot title: %s\n", plotTitle.c_str());
   data.plotOn(frame);
+  RooHist* dataHist = frame->getHist();
   model.plotOn(frame);
+  RooCurve* modelCurve = frame->getCurve();
   model.plotOn(frame, Name("siglPDF"), Components(siglPDF), LineStyle(kSolid), LineColor(kRed));
   model.plotOn(frame, Name("swapPDF"), Components(swapPDF), LineStyle(kSolid), LineColor(kOrange+1));
   if (doPkkk) model.plotOn(frame, Name("pkkkPDF"), Components(pkkkPDF), LineStyle(kSolid), LineColor(kViolet-3));
   if (doPkpp) model.plotOn(frame, Name("pkppPDF"), Components(pkppPDF), LineStyle(kSolid), LineColor(kTeal-7));
   model.plotOn(frame, Name("combPDF"), Components(combPDF), LineStyle(kDashed), LineColor(kGray));
   styleframe_massfit(frame, DmassMin, DmassMax, DmassNBins);
+  canvas->cd();
   frame->Draw();
   
   canvas->SaveAs(Form("%s/fit_result_full_clean.pdf", rstDir.c_str()));
-
+  
+  TCanvas* pullCanvas = new TCanvas("pullCanvas", "Canvas with Pull", 800, 800);
+  TPad* padTop = new TPad("padTop", "", 0.0, 0.3, 1.0, 1.0);
+  TPad* padBot = new TPad("padBot", "", 0.0, 0.0, 1.0, 0.3);
+  padTop->SetMargin(0.10, 0.10, 0.00, 0.143);
+  padBot->SetMargin(0.10, 0.10, 0.333, 0.00);
+  padTop->Draw();
+  padBot->Draw();
+  RooHist* pullHist = dataHist->makePullHist(*modelCurve, true);
+  RooPlot* fitFrame = static_cast<RooPlot*>(frame->Clone());
+  fitFrame->GetXaxis()->SetTitleSize(0.035/0.7);
+  fitFrame->GetYaxis()->SetTitleSize(0.035/0.7);
+  fitFrame->GetYaxis()->SetTitleOffset(0.7);
+  fitFrame->GetXaxis()->SetLabelSize(0.03/0.7);
+  fitFrame->GetYaxis()->SetLabelSize(0.03/0.7);
+  RooPlot* pullFrame = m.frame(DmassNBins);
+  pullFrame->SetTitle("; Mass [GeV]; Pull");
+  pullFrame->GetXaxis()->SetTitleSize(0.035/0.3);
+  pullFrame->GetXaxis()->SetTitleOffset(1.0);
+  pullFrame->GetYaxis()->SetTitleSize(0.035/0.3);
+  pullFrame->GetYaxis()->SetTitleOffset(0.3);
+  pullFrame->GetXaxis()->SetLabelSize(0.03/0.3);
+  pullFrame->GetYaxis()->SetLabelSize(0.03/0.3);
+  pullFrame->addPlotable(pullHist, "P");
+  padTop->cd();
+  fitFrame->Draw();
+  padBot->cd();
+  pullFrame->Draw();
+  TLine* zeroLine = new TLine(DmassMin, 0, DmassMax, 0);
+  zeroLine->SetLineColor(kGray);
+  zeroLine->SetLineStyle(9);
+  zeroLine->Draw("same");
+  pullCanvas->SaveAs(Form("%s/fit_result_full_pull.pdf", rstDir.c_str()));
+  
+  canvas->cd();
   // Add parameter annotations
   double xpos = 0.60, ypos = 0.85, ypos_step = 0.05; // Starting position and step for annotations
-  
   int nLegEntries = 3;
   if (doPkkk) nLegEntries++;
   if (doPkpp) nLegEntries++;
@@ -811,10 +850,23 @@ void main_fit(TTree *datatree, string rstDir, string output,
   
   canvas->SaveAs(Form("%s/fit_result_full_legend.pdf", rstDir.c_str()));
   
+  padTop->cd();
+  TLegend* pullLegend = (TLegend*) legend->Clone("pullLegend");
+  pullLegend->SetTextSize(0.03/0.7 );
+  pullLegend->SetY1NDC(ypos - ypos_step*(nLegEntries)*1.1);
+  pullLegend->SetY2NDC(ypos);
+  pullLegend->Draw();
+  pullCanvas->SaveAs(Form("%s/fit_result_full_pull_legend.pdf", rstDir.c_str()));
+  
   TLatex latex;
   latex.SetTextSize(0.03);
   latex.SetNDC();
+  TPad* latexPad = new TPad("latexPad", "", 0., 0., 1., 1.);
+  latexPad->SetFillStyle(0);
+  canvas->cd();
+  latexPad->Draw();
   
+  latexPad->cd();
   int lineCount = 0;
   if (comb.doSyst)
   {
@@ -835,12 +887,25 @@ void main_fit(TTree *datatree, string rstDir, string output,
                                                     events.npkpp.getPropagatedError(*result)));
   latex.DrawLatex(xpos, ypos - (lineCount++) * ypos_step, Form("N_{Comb} = %.3f #pm %.3f", events.nbkg.getVal(), events.nbkg.getError()));
   
+  canvas->cd();
+  canvas->Update();
   canvas->SaveAs(Form("%s/fit_result_full_param_legend.pdf", rstDir.c_str()));
   
+  pullCanvas->cd();
+  TPad* latexPadPull = (TPad*) latexPad->Clone("latexPadPull");
+  latexPadPull->SetPad(0.02, 0.10, 0.92, 1.0);
+  latexPadPull->Draw();
+  pullCanvas->SaveAs(Form("%s/fit_result_full_pull_param_legend.pdf", rstDir.c_str()));
+  
+  canvas->cd();
   legend->Clear();
   canvas->Update();
-  
   canvas->SaveAs(Form("%s/fit_result_full_param.pdf", rstDir.c_str()));
+  
+  pullCanvas->cd();
+  pullLegend->Clear();
+  pullCanvas->Update();
+  pullCanvas->SaveAs(Form("%s/fit_result_full_pull_param.pdf", rstDir.c_str()));
 
   double SoverB = events.nsig.getVal()/TMath::Sqrt(events.nsig.getVal()+events.nbkg.getVal());
 
