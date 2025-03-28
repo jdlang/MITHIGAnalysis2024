@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   string         wSystFitSigAlpha = CL.Get    ("wSystFitSigAlpha", "MassFit_systFitSigAlpha"); // Include fit systematics of different signal modeling. The input is the fit directory name
   // string         wSystFitComb     = CL.Get    ("wSystFitComb", "MassFit_systComb");// Include fit systematics of different combinatorics modeling. The input is the fit directory name
   string         wSystFitPkBg     = CL.Get    ("wSystFitPkBg", "MassFit_systPkBg");// Include fit systematics of different background KK and pipi peak modeling. The input is the fit directory name
-  string         wSystMassWindow  = CL.Get    ("wSystMassWindow", "MassFit_systMassWindow040");
+  string         wSystMassWindow  = CL.Get    ("wSystMassWindow", "MassFit_systMassWindow");
   string         nominalSampleRST = CL.Get    ("nominalSampleRST", "fullAnalysis");// Nominal sample directory name
   string         nominalFitRST    = CL.Get    ("nominalFitRST", "MassFit");        // Nominal fit directory name
 

@@ -42,9 +42,9 @@ using namespace RooFit;
 using namespace std;
 
 #define DMASS 1.86484
-#define DMASSMIN 1.67
-#define DMASSMAX 2.07
-#define DMASSNBINS 32
+#define DMASSMIN 1.66
+#define DMASSMAX 2.16
+#define DMASSNBINS 40
 
 struct ParamsBase {
   std::map<std::string, RooRealVar*> params; // Store RooRealVar objects
@@ -866,6 +866,61 @@ void plot_extractedSignal(
   delete ratio_fitPkbg;
 }
 
+TGraphAsymmErrors* GetRatioGraph(TGraphAsymmErrors* gr1, TGraphAsymmErrors* gr2)
+{
+  if (!gr1 || !gr2)
+  {
+    std::cerr << "Error: One of the graphs is null!" << std::endl;
+    return nullptr;
+  }
+
+  int n1 = gr1->GetN();
+  int n2 = gr2->GetN();
+  
+  if (n1 != n2)
+  {
+    std::cerr << "Error: Graphs have different number of points!" << std::endl;
+    return nullptr;
+  }
+
+  std::vector<double> xVals, yVals, xErrsLo, xErrsHi, yErrs;
+
+  for (int i = 0; i < n1; i++)
+  {
+    double x1, y1, x2, y2;
+    gr1->GetPoint(i, x1, y1);
+    gr2->GetPoint(i, x2, y2);
+    
+    double xErr1Lo = gr1->GetErrorXlow(i);
+    double xErr1Hi = gr1->GetErrorXhigh(i);
+    
+    double yErr1 = 0.5 * (gr1->GetErrorYlow(i) + gr1->GetErrorYhigh(i));
+    double yErr2 = 0.5 * (gr2->GetErrorYlow(i) + gr2->GetErrorYhigh(i));
+    
+    double ratio = 0;
+    double ratioErr = 0;
+    if (y2 != 0) {
+      ratio = y1 / y2;
+      ratioErr = ratio * sqrt(pow(yErr1 / y1, 2) + pow(yErr2 / y2, 2));
+    }
+    else {
+      std::cerr << "Warning: Division by zero at x = " << x1 << std::endl;
+    }
+    
+    xVals.push_back(x1); // [PLEASE CHECK] with respect to the x-coordinate of the first graph
+    yVals.push_back(ratio);
+    xErrsLo.push_back(xErr1Lo); // with respect to the x error of the first graph
+    xErrsHi.push_back(xErr1Hi); // with respect to the x error of the first graph
+    yErrs.push_back(ratioErr);
+  }
+
+  return new TGraphAsymmErrors(
+    xVals.size(), xVals.data(), yVals.data(),
+    xErrsLo.data(), xErrsHi.data(),
+    yErrs.data(), yErrs.data()
+  );
+}
+
 void plot_rawYield(
   vector<string> rstDirs,
   string plotTitle,
@@ -879,7 +934,7 @@ void plot_rawYield(
   vector<string> input_nominal;
   vector<string> input_fitMean;
   vector<string> input_fitAlpha;
-  vector<string> input_fitComb;
+  //vector<string> input_fitComb;
   vector<string> input_fitPkbg;
   vector<string> input_massWin;
   
@@ -887,7 +942,7 @@ void plot_rawYield(
     input_nominal.push_back(Form("%s/MassFit/correctedYields.md", rstDir.c_str()));
     input_fitMean.push_back(Form("%s/MassFit_systFitSigMean/correctedYields.md", rstDir.c_str()));
     input_fitAlpha.push_back(Form("%s/MassFit_systFitSigAlpha/correctedYields.md", rstDir.c_str()));
-    input_fitComb.push_back(Form("%s/MassFit_systComb/correctedYields.md", rstDir.c_str()));
+    //input_fitComb.push_back(Form("%s/MassFit_systComb/correctedYields.md", rstDir.c_str()));
     input_fitPkbg.push_back(Form("%s/MassFit_systPkBg/correctedYields.md", rstDir.c_str()));
     input_massWin.push_back(Form("%s/MassFit_systMassWindow/correctedYields.md", rstDir.c_str()));
   }
@@ -895,7 +950,7 @@ void plot_rawYield(
   vector<Point> points_nominal  = getPointArr(ptMin, ptMax, isGammaN, input_nominal);
   vector<Point> points_fitMean  = getPointArr(ptMin, ptMax, isGammaN, input_fitMean);
   vector<Point> points_fitAlpha = getPointArr(ptMin, ptMax, isGammaN, input_fitAlpha);
-  vector<Point> points_fitComb  = getPointArr(ptMin, ptMax, isGammaN, input_fitComb);
+  //vector<Point> points_fitComb  = getPointArr(ptMin, ptMax, isGammaN, input_fitComb);
   vector<Point> points_fitPkbg  = getPointArr(ptMin, ptMax, isGammaN, input_fitPkbg);
   vector<Point> points_massWin  = getPointArr(ptMin, ptMax, isGammaN, input_massWin);
   
@@ -905,8 +960,8 @@ void plot_rawYield(
   vector<double> rawYieldErr_fitMean  = getDoubleArr(points_fitMean, [](Point& p) -> double { return p.rawYieldError;} );
   vector<double> rawYieldVal_fitAlpha = getDoubleArr(points_fitAlpha, [](Point& p) -> double { return p.rawYield;} );
   vector<double> rawYieldErr_fitAlpha = getDoubleArr(points_fitAlpha, [](Point& p) -> double { return p.rawYieldError;} );
-  vector<double> rawYieldVal_fitComb  = getDoubleArr(points_fitComb, [](Point& p) -> double { return p.rawYield;} );
-  vector<double> rawYieldErr_fitComb  = getDoubleArr(points_fitComb, [](Point& p) -> double { return p.rawYieldError;} );
+  //vector<double> rawYieldVal_fitComb  = getDoubleArr(points_fitComb, [](Point& p) -> double { return p.rawYield;} );
+  //vector<double> rawYieldErr_fitComb  = getDoubleArr(points_fitComb, [](Point& p) -> double { return p.rawYieldError;} );
   vector<double> rawYieldVal_fitPkbg  = getDoubleArr(points_fitPkbg, [](Point& p) -> double { return p.rawYield;} );
   vector<double> rawYieldErr_fitPkbg  = getDoubleArr(points_fitPkbg, [](Point& p) -> double { return p.rawYieldError;} );
   vector<double> rawYieldVal_massWin  = getDoubleArr(points_massWin, [](Point& p) -> double { return p.rawYield;} );
@@ -917,25 +972,25 @@ void plot_rawYield(
   TGraphAsymmErrors* extrSigl_nominal  = new TGraphAsymmErrors(nYBins);
   TGraphAsymmErrors* extrSigl_fitMean  = new TGraphAsymmErrors(nYBins);
   TGraphAsymmErrors* extrSigl_fitAlpha = new TGraphAsymmErrors(nYBins);
-  TGraphAsymmErrors* extrSigl_fitComb  = new TGraphAsymmErrors(nYBins);
+  //TGraphAsymmErrors* extrSigl_fitComb  = new TGraphAsymmErrors(nYBins);
   TGraphAsymmErrors* extrSigl_fitPkbg  = new TGraphAsymmErrors(nYBins);
   TGraphAsymmErrors* extrSigl_massWin  = new TGraphAsymmErrors(nYBins);
   
-  TH1D* ratioTemplate  = new TH1D(
-    "ratioTemplate", "; y; syst/nominal", nYBins, yBins);
-  TGraphAsymmErrors* ratio_fitMean  = new TGraphAsymmErrors(nYBins);
-  TGraphAsymmErrors* ratio_fitAlpha = new TGraphAsymmErrors(nYBins);
-  TGraphAsymmErrors* ratio_fitComb  = new TGraphAsymmErrors(nYBins);
-  TGraphAsymmErrors* ratio_fitPkbg  = new TGraphAsymmErrors(nYBins);
-  TGraphAsymmErrors* ratio_massWin  = new TGraphAsymmErrors(nYBins);
+//  TH1D* ratioTemplate  = new TH1D(
+//    "ratioTemplate", "; y; syst/nominal", nYBins, yBins);
+//  TGraphAsymmErrors* ratio_fitMean  = new TGraphAsymmErrors(nYBins);
+//  TGraphAsymmErrors* ratio_fitAlpha = new TGraphAsymmErrors(nYBins);
+//  TGraphAsymmErrors* ratio_fitComb  = new TGraphAsymmErrors(nYBins);
+//  TGraphAsymmErrors* ratio_fitPkbg  = new TGraphAsymmErrors(nYBins);
+//  TGraphAsymmErrors* ratio_massWin  = new TGraphAsymmErrors(nYBins);
     
   double offset = 0.02;
-  double offset_nominal  = 5 * offset;
-  double offset_fitMean  = 3 * offset;
-  double offset_fitAlpha = 1 * offset;
-  double offset_fitComb  = -1 * offset;
-  double offset_fitPkbg  = -3 * offset;
-  double offset_massWin  = -5 * offset;
+  double offset_nominal  = 4 * offset;
+  double offset_fitMean  = 2 * offset;
+  double offset_fitAlpha = 0 * offset;
+  double offset_fitPkbg  = -2 * offset;
+  double offset_massWin  = -4 * offset;
+  //double offset_fitComb  = -1 * offset;
   for (int yBin = 0; yBin < nYBins; yBin++) {
     double yBinCenter = 0.5 * (yBins[yBin] + yBins[yBin+1]);
     // Set yield plots
@@ -957,12 +1012,12 @@ void plot_rawYield(
       0.5 - offset_fitAlpha, 0.5 + offset_fitAlpha,
       rawYieldErr_fitAlpha[yBin], rawYieldErr_fitAlpha[yBin]
     );
-    extrSigl_fitComb->SetPoint(yBin,
-      yBinCenter - offset_fitComb, rawYieldVal_fitComb[yBin]);
-    extrSigl_fitComb->SetPointError(yBin,
-      0.5 - offset_fitComb, 0.5 + offset_fitComb,
-      rawYieldErr_fitComb[yBin], rawYieldErr_fitComb[yBin]
-    );
+    //extrSigl_fitComb->SetPoint(yBin,
+    //  yBinCenter - offset_fitComb, rawYieldVal_fitComb[yBin]);
+    //extrSigl_fitComb->SetPointError(yBin,
+    //  0.5 - offset_fitComb, 0.5 + offset_fitComb,
+    //  rawYieldErr_fitComb[yBin], rawYieldErr_fitComb[yBin]
+    //);
     extrSigl_fitPkbg->SetPoint(yBin,
       yBinCenter - offset_fitPkbg, rawYieldVal_fitPkbg[yBin]);
     extrSigl_fitPkbg->SetPointError(yBin,
@@ -975,68 +1030,76 @@ void plot_rawYield(
       0.5 - offset_massWin, 0.5 + offset_massWin,
       rawYieldErr_massWin[yBin], rawYieldErr_massWin[yBin]
     );
-    // Set ratio plots
-    double ratioErr_fitMean = (
-      TMath::Abs(rawYieldErr_fitMean[yBin] * rawYieldVal_nominal[yBin] -
-      rawYieldVal_fitMean[yBin] * rawYieldErr_nominal[yBin]) /
-      (rawYieldVal_nominal[yBin] * rawYieldVal_nominal[yBin])
-    );
-    ratio_fitMean->SetPoint(yBin,
-      yBinCenter - offset_fitMean,
-      rawYieldVal_fitMean[yBin]/rawYieldVal_nominal[yBin]);
-    ratio_fitMean->SetPointError(yBin,
-      0.5 - offset_fitMean, 0.5 + offset_fitMean,
-      rawYieldErr_fitMean[yBin], rawYieldErr_fitMean[yBin]
-    );
-    double ratioErr_fitAlpha = (
-      TMath::Abs(rawYieldErr_fitAlpha[yBin] * rawYieldVal_nominal[yBin] -
-      rawYieldVal_fitAlpha[yBin] * rawYieldErr_nominal[yBin]) /
-      (rawYieldVal_nominal[yBin] * rawYieldVal_nominal[yBin])
-    );
-    ratio_fitAlpha->SetPoint(yBin,
-      yBinCenter - offset_fitAlpha,
-      rawYieldVal_fitAlpha[yBin]/rawYieldVal_nominal[yBin]);
-    ratio_fitAlpha->SetPointError(yBin,
-      0.5 - offset_fitAlpha, 0.5 + offset_fitAlpha,
-      rawYieldErr_fitAlpha[yBin], rawYieldErr_fitAlpha[yBin]
-    );
-    double ratioErr_fitComb = (
-      TMath::Abs(rawYieldErr_fitComb[yBin] * rawYieldVal_nominal[yBin] -
-      rawYieldVal_fitComb[yBin] * rawYieldErr_nominal[yBin]) /
-      (rawYieldVal_nominal[yBin] * rawYieldVal_nominal[yBin])
-    );
-    ratio_fitComb->SetPoint(yBin,
-      yBinCenter - offset_fitComb,
-      rawYieldVal_fitComb[yBin]/rawYieldVal_nominal[yBin]);
-    ratio_fitComb->SetPointError(yBin,
-      0.5 - offset_fitComb, 0.5 + offset_fitComb,
-      rawYieldErr_fitComb[yBin], rawYieldErr_fitComb[yBin]
-    );
-    double ratioErr_fitPkbg = (
-      TMath::Abs(rawYieldErr_fitPkbg[yBin] * rawYieldVal_nominal[yBin] -
-      rawYieldVal_fitPkbg[yBin] * rawYieldErr_nominal[yBin]) /
-      (rawYieldVal_nominal[yBin] * rawYieldVal_nominal[yBin])
-    );
-    ratio_fitPkbg->SetPoint(yBin,
-      yBinCenter - offset_fitPkbg,
-      rawYieldVal_fitPkbg[yBin]/rawYieldVal_nominal[yBin]);
-    ratio_fitPkbg->SetPointError(yBin,
-      0.5 - offset_fitPkbg, 0.5 + offset_fitPkbg,
-      rawYieldErr_fitPkbg[yBin], rawYieldErr_fitPkbg[yBin]
-    );
-    double ratioErr_massWin = (
-      TMath::Abs(rawYieldErr_massWin[yBin] * rawYieldVal_nominal[yBin] -
-      rawYieldVal_massWin[yBin] * rawYieldErr_nominal[yBin]) /
-      (rawYieldVal_nominal[yBin] * rawYieldVal_nominal[yBin])
-    );
-    ratio_massWin->SetPoint(yBin,
-      yBinCenter - offset_massWin,
-      rawYieldVal_massWin[yBin]/rawYieldVal_nominal[yBin]);
-    ratio_massWin->SetPointError(yBin,
-      0.5 - offset_massWin, 0.5 + offset_massWin,
-      ratioErr_massWin, ratioErr_massWin
-    );
+//    // Set ratio plots
+//    double ratioErr_fitMean = (
+//      TMath::Abs(rawYieldErr_fitMean[yBin] * rawYieldVal_nominal[yBin] -
+//      rawYieldVal_fitMean[yBin] * rawYieldErr_nominal[yBin]) /
+//      (rawYieldVal_nominal[yBin] * rawYieldVal_nominal[yBin])
+//    );
+//    ratio_fitMean->SetPoint(yBin,
+//      yBinCenter - offset_fitMean,
+//      rawYieldVal_fitMean[yBin]/rawYieldVal_nominal[yBin]);
+//    ratio_fitMean->SetPointError(yBin,
+//      0.5 - offset_fitMean, 0.5 + offset_fitMean,
+//      rawYieldErr_fitMean[yBin], rawYieldErr_fitMean[yBin]
+//    );
+//    double ratioErr_fitAlpha = (
+//      TMath::Abs(rawYieldErr_fitAlpha[yBin] * rawYieldVal_nominal[yBin] -
+//      rawYieldVal_fitAlpha[yBin] * rawYieldErr_nominal[yBin]) /
+//      (rawYieldVal_nominal[yBin] * rawYieldVal_nominal[yBin])
+//    );
+//    ratio_fitAlpha->SetPoint(yBin,
+//      yBinCenter - offset_fitAlpha,
+//      rawYieldVal_fitAlpha[yBin]/rawYieldVal_nominal[yBin]);
+//    ratio_fitAlpha->SetPointError(yBin,
+//      0.5 - offset_fitAlpha, 0.5 + offset_fitAlpha,
+//      rawYieldErr_fitAlpha[yBin], rawYieldErr_fitAlpha[yBin]
+//    );
+//    double ratioErr_fitComb = (
+//      TMath::Abs(rawYieldErr_fitComb[yBin] * rawYieldVal_nominal[yBin] -
+//      rawYieldVal_fitComb[yBin] * rawYieldErr_nominal[yBin]) /
+//      (rawYieldVal_nominal[yBin] * rawYieldVal_nominal[yBin])
+//    );
+//    ratio_fitComb->SetPoint(yBin,
+//      yBinCenter - offset_fitComb,
+//      rawYieldVal_fitComb[yBin]/rawYieldVal_nominal[yBin]);
+//    ratio_fitComb->SetPointError(yBin,
+//      0.5 - offset_fitComb, 0.5 + offset_fitComb,
+//      rawYieldErr_fitComb[yBin], rawYieldErr_fitComb[yBin]
+//    );
+//    double ratioErr_fitPkbg = (
+//      TMath::Abs(rawYieldErr_fitPkbg[yBin] * rawYieldVal_nominal[yBin] -
+//      rawYieldVal_fitPkbg[yBin] * rawYieldErr_nominal[yBin]) /
+//      (rawYieldVal_nominal[yBin] * rawYieldVal_nominal[yBin])
+//    );
+//    ratio_fitPkbg->SetPoint(yBin,
+//      yBinCenter - offset_fitPkbg,
+//      rawYieldVal_fitPkbg[yBin]/rawYieldVal_nominal[yBin]);
+//    ratio_fitPkbg->SetPointError(yBin,
+//      0.5 - offset_fitPkbg, 0.5 + offset_fitPkbg,
+//      rawYieldErr_fitPkbg[yBin], rawYieldErr_fitPkbg[yBin]
+//    );
+//    double ratioErr_massWin = (
+//      TMath::Abs(rawYieldErr_massWin[yBin] * rawYieldVal_nominal[yBin] -
+//      rawYieldVal_massWin[yBin] * rawYieldErr_nominal[yBin]) /
+//      (rawYieldVal_nominal[yBin] * rawYieldVal_nominal[yBin])
+//    );
+//    ratio_massWin->SetPoint(yBin,
+//      yBinCenter - offset_massWin,
+//      rawYieldVal_massWin[yBin]/rawYieldVal_nominal[yBin]);
+//    ratio_massWin->SetPointError(yBin,
+//      0.5 - offset_massWin, 0.5 + offset_massWin,
+//      ratioErr_massWin, ratioErr_massWin
+//    );
   }
+  TH1D* ratioTemplate  = new TH1D(
+    "ratioTemplate", "; y; syst/nominal", nYBins, yBins);
+  TGraphAsymmErrors* ratio_fitMean  = GetRatioGraph(extrSigl_fitMean, extrSigl_nominal);
+  TGraphAsymmErrors* ratio_fitAlpha = GetRatioGraph(extrSigl_fitAlpha, extrSigl_nominal);
+  //TGraphAsymmErrors* ratio_fitComb  = GetRatioGraph(extrSigl_fitComb, extrSigl_nominal);
+  TGraphAsymmErrors* ratio_fitPkbg  = GetRatioGraph(extrSigl_fitPkbg, extrSigl_nominal);
+  TGraphAsymmErrors* ratio_massWin  = GetRatioGraph(extrSigl_massWin, extrSigl_nominal);
+  
   extrSiglTemplate->SetMinimum(0.);
   extrSiglTemplate->SetMaximum(150.);
   ratioTemplate->SetMinimum(0.7);
@@ -1046,29 +1109,29 @@ void plot_rawYield(
   extrSigl_nominal->SetLineColor(kBlack);
   extrSigl_nominal->SetLineWidth(2);
   // SystFitMean
-  extrSigl_fitMean->SetLineColor(kRed);
+  extrSigl_fitMean->SetLineColor(kPink-8);
   extrSigl_fitMean->SetLineWidth(2);
-  ratio_fitMean->SetLineColor(kRed);
+  ratio_fitMean->SetLineColor(kPink-8);
   ratio_fitMean->SetLineWidth(2);
   // SystFitAlpha
-  extrSigl_fitAlpha->SetLineColor(kOrange);
+  extrSigl_fitAlpha->SetLineColor(kOrange+2);
   extrSigl_fitAlpha->SetLineWidth(2);
-  ratio_fitAlpha->SetLineColor(kOrange);
+  ratio_fitAlpha->SetLineColor(kOrange+2);
   ratio_fitAlpha->SetLineWidth(2);
   // SystFitComb
-  extrSigl_fitComb->SetLineColor(kGreen);
-  extrSigl_fitComb->SetLineWidth(2);
-  ratio_fitComb->SetLineColor(kGreen);
-  ratio_fitComb->SetLineWidth(2);
+  //extrSigl_fitComb->SetLineColor(kGreen);
+  //extrSigl_fitComb->SetLineWidth(2);
+  //ratio_fitComb->SetLineColor(kGreen);
+  //ratio_fitComb->SetLineWidth(2);
   // SystFitPkbg
-  extrSigl_fitPkbg->SetLineColor(kViolet);
+  extrSigl_fitPkbg->SetLineColor(kViolet+2);
   extrSigl_fitPkbg->SetLineWidth(2);
-  ratio_fitPkbg->SetLineColor(kViolet);
+  ratio_fitPkbg->SetLineColor(kViolet+2);
   ratio_fitPkbg->SetLineWidth(2);
   // SystMassWin
-  extrSigl_massWin->SetLineColor(kBlue);
+  extrSigl_massWin->SetLineColor(kAzure+2);
   extrSigl_massWin->SetLineWidth(2);
-  ratio_massWin->SetLineColor(kBlue);
+  ratio_massWin->SetLineColor(kAzure+2);
   ratio_massWin->SetLineWidth(2);
   
   TCanvas* canvas = new TCanvas("canvas", "", 600, 600);
@@ -1086,7 +1149,7 @@ void plot_rawYield(
   extrSigl_nominal->Draw("same p");
   extrSigl_fitMean->Draw("same p");
   extrSigl_fitAlpha->Draw("same p");
-  extrSigl_fitComb->Draw("same p");
+  //extrSigl_fitComb->Draw("same p");
   extrSigl_fitPkbg->Draw("same p");
   extrSigl_massWin->Draw("same p");
   gStyle->SetOptStat(0);
@@ -1103,7 +1166,7 @@ void plot_rawYield(
   unity->Draw();
   ratio_fitMean->Draw("same p");
   ratio_fitAlpha->Draw("same p");
-  ratio_fitComb->Draw("same p");
+  //ratio_fitComb->Draw("same p");
   ratio_fitPkbg->Draw("same p");
   ratio_massWin->Draw("same p");
   gStyle->SetOptStat(0);
@@ -1118,7 +1181,7 @@ void plot_rawYield(
   legend->AddEntry(extrSigl_nominal,  "Nominal Corr. Yield", "l");
   legend->AddEntry(extrSigl_fitMean,  "Fit Syst: Signal mean", "l");
   legend->AddEntry(extrSigl_fitAlpha, "Fit Syst: Signal alpha", "l");
-  legend->AddEntry(extrSigl_fitComb,  "Fit Syst: Comb. Background", "l");
+  //legend->AddEntry(extrSigl_fitComb,  "Fit Syst: Comb. Background", "l");
   legend->AddEntry(extrSigl_fitPkbg,  "Fit Syst: KK + #pi#pi Peaks", "l");
   legend->AddEntry(extrSigl_massWin,  "Fit Syst: Mass Window", "l");
   legend->Draw();
@@ -1130,13 +1193,13 @@ void plot_rawYield(
   delete extrSigl_nominal;
   delete extrSigl_fitMean;
   delete extrSigl_fitAlpha;
-  delete extrSigl_fitComb;
+  //delete extrSigl_fitComb;
   delete extrSigl_fitPkbg;
   delete extrSigl_massWin;
   delete ratioTemplate;
   delete ratio_fitMean;
   delete ratio_fitAlpha;
-  delete ratio_fitComb;
+  //delete ratio_fitComb;
   delete ratio_fitPkbg;
   delete ratio_massWin;
 }
