@@ -76,7 +76,8 @@ if [[ "$DO_SAMPLES" -eq "1" ]]; then
   echo ""
   echo "Config directory: $SAMPLE_DIR"
   echo ""
-  for SAMPLE_JSON in ${SAMPLELIST[@]}; do
+  for SAMPLE_JSON in ${SAMPLE_LIST[@]}; do
+      echo "Processing: $SAMPLE_DIR/$SAMPLE_JSON"
       bash makeMicroTree.sh $SAMPLE_DIR/$SAMPLE_JSON
       wait
   done
@@ -91,6 +92,7 @@ if [[ "$DO_MASSFIT" -eq "1" ]]; then
   echo "MassFit config directory: $MASSFIT_DIR"
   echo ""
   for MASSFIT_JSON in ${MASSFIT_LIST[@]}; do
+    echo "Processing: $MASSFIT_DIR/$MASSFIT_JSON"
     bash massfit.sh $MASSFIT_DIR/$MASSFIT_JSON
     wait
   done
