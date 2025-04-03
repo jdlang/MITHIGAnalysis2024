@@ -1898,6 +1898,311 @@ void cuts_lambda_vs_y(
   delete ratio_RapGapTight;
 }
 
+void sigma_gN_Ng_vs_y(
+  vector<string> nominalDirs_gN,
+  vector<string> nominalDirs_Ng,
+  string plotTitle,
+  string plotLabel,
+  int nYBins,
+  double* yBins
+) {
+  vector<string> input_nominal_mc_gN;
+  vector<string> input_nominal_mc_Ng;
+  vector<string> input_nominal_data_gN;
+  vector<string> input_nominal_data_Ng;
+  
+  for (int i = 0; i < nYBins; i++) {
+    input_nominal_mc_gN.push_back(
+      Form("fullAnalysis/%s/MassFit/siglmc.dat", nominalDirs_gN[i].c_str()));
+    input_nominal_mc_Ng.push_back(
+      Form("fullAnalysis/%s/MassFit/siglmc.dat", nominalDirs_Ng[nYBins-1-i].c_str()));
+    input_nominal_data_gN.push_back(
+      Form("fullAnalysis/%s/MassFit/sigldata.dat", nominalDirs_gN[i].c_str()));
+    input_nominal_data_Ng.push_back(
+      Form("fullAnalysis/%s/MassFit/sigldata.dat", nominalDirs_Ng[nYBins-1-i].c_str()));
+  }
+  
+  TH1D* sigma1_hist  = new TH1D(
+    "sigma1_hist",
+    (plotTitle + "; y; Width of 1^{st} Gaussian [GeV]").c_str(),
+    nYBins, yBins);
+  sigma1_hist->SetMinimum(0.);
+  sigma1_hist->SetMaximum(0.04);
+  
+  TH1D* sigma2_hist  = new TH1D(
+    "sigma2_hist",
+    (plotTitle + "; y; Width of 2^{nd} Gaussian [GeV]").c_str(),
+    nYBins, yBins);
+  sigma2_hist->SetMinimum(0.);
+  sigma2_hist->SetMaximum(0.018);
+  
+  TH1D* sigma1_ratio  = new TH1D(
+    "sigma1_ratio",
+    "; y; #sigma_{1}^{#gammaN} / #sigma_{1}^{N#gamma}",
+    nYBins, yBins);
+  sigma1_ratio->SetMinimum(0.6);
+  sigma1_ratio->SetMaximum(1.4);
+  
+  TH1D* sigma2_ratio  = new TH1D(
+    "sigma2_ratio",
+    "; y; #sigma_{2}^{#gammaN} / #sigma_{2}^{N#gamma}",
+    nYBins, yBins);
+  sigma2_ratio->SetMinimum(0.6);
+  sigma2_ratio->SetMaximum(1.4);
+  
+  TH1D* sigma1_nominal_mc_gN = (TH1D*) sigma1_hist->Clone("sigma1_nominal_mc_gN");
+  TH1D* sigma1_nominal_mc_Ng = (TH1D*) sigma1_hist->Clone("sigma1_nominal_mc_Ng");
+  TH1D* sigma1_nominal_data_gN = (TH1D*) sigma1_hist->Clone("sigma1_nominal_data_gN");
+  TH1D* sigma1_nominal_data_Ng = (TH1D*) sigma1_hist->Clone("sigma1_nominal_data_Ng");
+
+  TH1D* sigma2_nominal_mc_gN = (TH1D*) sigma1_hist->Clone("sigma2_nominal_mc_gN");
+  TH1D* sigma2_nominal_mc_Ng = (TH1D*) sigma1_hist->Clone("sigma2_nominal_mc_Ng");
+  TH1D* sigma2_nominal_data_gN = (TH1D*) sigma1_hist->Clone("sigma2_nominal_data_gN");
+  TH1D* sigma2_nominal_data_Ng = (TH1D*) sigma1_hist->Clone("sigma2_nominal_data_Ng");
+  
+  for (int i = 1; i <= nYBins; i++) {
+    double yBinCenter = 0.5 * (yBins[i] + yBins[i+1]);
+    double yBinWidth = 0.5 * (yBins[i+1] - yBins[i]);
+    
+    SignalParams sigl_nominal_mc_gN = SignalParams(input_nominal_mc_gN[i-1]);
+    sigma1_nominal_mc_gN->SetBinContent(i, sigl_nominal_mc_gN.sigma1.getVal());
+    sigma1_nominal_mc_gN->SetBinError(i, sigl_nominal_mc_gN.sigma1.getError());
+    sigma2_nominal_mc_gN->SetBinContent(i, sigl_nominal_mc_gN.sigma2.getVal());
+    sigma2_nominal_mc_gN->SetBinError(i, sigl_nominal_mc_gN.sigma2.getError());
+    
+    SignalParams sigl_nominal_mc_Ng = SignalParams(input_nominal_mc_Ng[i-1]);
+    sigma1_nominal_mc_Ng->SetBinContent(i, sigl_nominal_mc_Ng.sigma1.getVal());
+    sigma1_nominal_mc_Ng->SetBinError(i, sigl_nominal_mc_Ng.sigma1.getError());
+    sigma2_nominal_mc_Ng->SetBinContent(i, sigl_nominal_mc_Ng.sigma2.getVal());
+    sigma2_nominal_mc_Ng->SetBinError(i, sigl_nominal_mc_Ng.sigma2.getError());
+    
+    SignalParams sigl_nominal_data_gN = SignalParams(input_nominal_data_gN[i-1]);
+    sigma1_nominal_data_gN->SetBinContent(i, sigl_nominal_data_gN.sigma1.getVal() * (1 + sigl_nominal_data_gN.alpha.getVal()));
+    sigma1_nominal_data_gN->SetBinError(i, sigl_nominal_data_gN.sigma1.getError() * (1 + sigl_nominal_data_gN.alpha.getVal()));
+    sigma2_nominal_data_gN->SetBinContent(i, sigl_nominal_data_gN.sigma2.getVal() * (1 + sigl_nominal_data_gN.alpha.getVal()));
+    sigma2_nominal_data_gN->SetBinError(i, sigl_nominal_data_gN.sigma2.getError() * (1 + sigl_nominal_data_gN.alpha.getVal()));
+    
+    SignalParams sigl_nominal_data_Ng = SignalParams(input_nominal_data_Ng[i-1]);
+    sigma1_nominal_data_Ng->SetBinContent(i, sigl_nominal_data_Ng.sigma1.getVal() * (1 + sigl_nominal_data_Ng.alpha.getVal()));
+    sigma1_nominal_data_Ng->SetBinError(i, sigl_nominal_data_Ng.sigma1.getError() * (1 + sigl_nominal_data_Ng.alpha.getVal()));
+    sigma2_nominal_data_Ng->SetBinContent(i, sigl_nominal_data_Ng.sigma2.getVal() * (1 + sigl_nominal_data_Ng.alpha.getVal()));
+    sigma2_nominal_data_Ng->SetBinError(i, sigl_nominal_data_Ng.sigma2.getError() * (1 + sigl_nominal_data_Ng.alpha.getVal()));
+  }
+  
+  TH1D* sigma1_nominal_ratio_mc = (TH1D*) sigma1_nominal_mc_gN->Clone("sigma1_nominal_ratio_mc");
+  TH1D* sigma1_nominal_ratio_data = (TH1D*) sigma1_nominal_data_gN->Clone("sigma1_nominal_ratio_data");
+  TH1D* sigma1_nominal_ratio_gN = (TH1D*) sigma1_nominal_data_gN->Clone("sigma1_nominal_ratio_gN");
+  TH1D* sigma1_nominal_ratio_Ng = (TH1D*) sigma1_nominal_data_Ng->Clone("sigma1_nominal_ratio_Ng");
+  sigma1_nominal_ratio_mc->Divide(sigma1_nominal_mc_Ng);
+  sigma1_nominal_ratio_data->Divide(sigma1_nominal_mc_Ng);
+  sigma1_nominal_ratio_gN->Divide(sigma1_nominal_mc_gN);
+  sigma1_nominal_ratio_Ng->Divide(sigma1_nominal_mc_Ng);
+  
+  TH1D* sigma2_nominal_ratio_mc = (TH1D*) sigma2_nominal_mc_gN->Clone("sigma2_nominal_ratio_mc");
+  TH1D* sigma2_nominal_ratio_data = (TH1D*) sigma2_nominal_data_gN->Clone("sigma2_nominal_ratio_data");
+  TH1D* sigma2_nominal_ratio_gN = (TH1D*) sigma2_nominal_data_gN->Clone("sigma2_nominal_ratio_gN");
+  TH1D* sigma2_nominal_ratio_Ng = (TH1D*) sigma2_nominal_data_Ng->Clone("sigma2_nominal_ratio_Ng");
+  sigma2_nominal_ratio_mc->Divide(sigma2_nominal_mc_Ng);
+  sigma2_nominal_ratio_data->Divide(sigma2_nominal_mc_Ng);
+  sigma2_nominal_ratio_gN->Divide(sigma2_nominal_mc_gN);
+  sigma2_nominal_ratio_Ng->Divide(sigma2_nominal_mc_Ng);
+  
+  TLegend* legend = new TLegend(0.2, 0.32, 0.6, 0.55);
+  legend->SetTextSize(0.015/0.7);
+  legend->SetFillStyle(0);
+  legend->SetBorderSize(0);
+  legend->AddEntry(sigma1_nominal_mc_gN, "MC #gammaN, Nominal", "lpe");
+  legend->AddEntry(sigma1_nominal_mc_Ng, "MC N#gamma, Nominal", "lpe");
+  legend->AddEntry(sigma1_nominal_data_gN, "Data #gammaN, Nominal", "lpe");
+  legend->AddEntry(sigma1_nominal_data_Ng, "Data N#gamma, Nominal", "lpe");
+  legend->AddEntry(sigma1_nominal_ratio_mc, "MC Ratio (#gammaN / N#gamma)", "lpe");
+  legend->AddEntry(sigma1_nominal_ratio_data, "Data Ratio (#gammaN / N#gamma)", "lpe");
+  legend->AddEntry(sigma1_nominal_ratio_gN, "#gammaN Ratio (Data / MC)", "lpe");
+  legend->AddEntry(sigma1_nominal_ratio_Ng, "N#gamma Ratio (Data / MC)", "lpe");
+  
+  TCanvas* canvas_sigma1 = new TCanvas("canvas_sigma1", "", 600, 600);
+  TPad* padTop_sigma1 = new TPad("padTop_sigma1", "", 0.0, 0.3, 1.0, 1.0);
+  TPad* padBot_sigma1 = new TPad("padTop_sigma1", "", 0.0, 0.0, 1.0, 0.3);
+  padTop_sigma1->SetMargin(0.18, 0.02, 0.00, 0.16);
+  padBot_sigma1->SetMargin(0.18, 0.02, 0.30, 0.00);
+  padTop_sigma1->Draw();
+  padBot_sigma1->Draw();
+  
+  TLine* unity = new TLine(yBins[0], 1.0, yBins[nYBins], 1.0);
+  unity->SetLineColor(kGray);
+  unity->SetLineWidth(1);
+  unity->SetLineStyle(9);
+  
+  sigma1_nominal_mc_gN->SetLineColor(kAzure+2);
+  sigma1_nominal_mc_gN->SetLineWidth(2);
+  sigma1_nominal_mc_gN->SetMarkerColor(kAzure+2);
+  sigma1_nominal_mc_gN->SetMarkerStyle(20);
+  
+  sigma1_nominal_mc_Ng->SetLineColor(kPink-8);
+  sigma1_nominal_mc_Ng->SetLineWidth(2);
+  sigma1_nominal_mc_Ng->SetMarkerColor(kPink-8);
+  sigma1_nominal_mc_Ng->SetMarkerStyle(20);
+  
+  sigma1_nominal_data_gN->SetLineColor(kAzure-9);
+  sigma1_nominal_data_gN->SetLineWidth(2);
+  sigma1_nominal_data_gN->SetMarkerColor(kAzure-9);
+  sigma1_nominal_data_gN->SetMarkerStyle(24);
+  
+  sigma1_nominal_data_Ng->SetLineColor(kPink+1);
+  sigma1_nominal_data_Ng->SetLineWidth(2);
+  sigma1_nominal_data_Ng->SetMarkerColor(kPink+1);
+  sigma1_nominal_data_Ng->SetMarkerStyle(24);
+  
+  sigma1_nominal_ratio_mc->SetLineColor(kViolet+2);
+  sigma1_nominal_ratio_mc->SetLineWidth(2);
+  sigma1_nominal_ratio_mc->SetMarkerColor(kViolet+2);
+  sigma1_nominal_ratio_mc->SetMarkerStyle(20);
+  
+  sigma1_nominal_ratio_data->SetLineColor(kViolet-9);
+  sigma1_nominal_ratio_data->SetLineWidth(2);
+  sigma1_nominal_ratio_data->SetMarkerColor(kViolet-9);
+  sigma1_nominal_ratio_data->SetMarkerStyle(24);
+  
+  sigma1_nominal_ratio_gN->SetLineColor(kAzure+1);
+  sigma1_nominal_ratio_gN->SetLineWidth(2);
+  sigma1_nominal_ratio_gN->SetMarkerColor(kAzure+1);
+  sigma1_nominal_ratio_gN->SetMarkerStyle(27);
+  sigma1_nominal_ratio_gN->SetMarkerSize(1.4);
+  
+  sigma1_nominal_ratio_Ng->SetLineColor(kPink-9);
+  sigma1_nominal_ratio_Ng->SetLineWidth(2);
+  sigma1_nominal_ratio_Ng->SetMarkerColor(kPink-9);
+  sigma1_nominal_ratio_Ng->SetMarkerStyle(27);
+  sigma1_nominal_ratio_Ng->SetMarkerSize(1.4);
+  
+  padTop_sigma1->cd();
+  sigma1_hist->Draw();
+  sigma1_hist->SetLabelSize(0.03/0.7, "Y");
+  sigma1_hist->SetTitleSize(0.035/0.7, "Y");
+  sigma1_nominal_data_gN->Draw("same");
+  sigma1_nominal_data_Ng->Draw("same");
+  sigma1_nominal_mc_gN->Draw("same");
+  sigma1_nominal_mc_Ng->Draw("same");
+  gStyle->SetOptStat(0);
+  
+  padBot_sigma1->cd();
+  sigma1_ratio->Draw();
+  sigma1_ratio->SetLabelSize(0.03/0.3, "XY");
+  sigma1_ratio->SetTitleSize(0.035/0.3, "XY");
+  sigma1_ratio->SetTitleOffset(0.4, "Y");
+  unity->Draw();
+  sigma1_nominal_ratio_mc->Draw("same");
+  sigma1_nominal_ratio_data->Draw("same");
+  sigma1_nominal_ratio_gN->Draw("same");
+  sigma1_nominal_ratio_Ng->Draw("same");
+  gStyle->SetOptStat(0);
+  
+  canvas_sigma1->cd();
+  canvas_sigma1->Update();
+  legend->Draw();
+  canvas_sigma1->SaveAs(Form("plot/SystEval_Cuts/%s_sigma1_vs_y.pdf", plotLabel.c_str()));
+  
+  TCanvas* canvas_sigma2 = new TCanvas("canvas_sigma2", "", 600, 600);
+  TPad* padTop_sigma2 = new TPad("padTop_sigma2", "", 0.0, 0.3, 1.0, 1.0);
+  TPad* padBot_sigma2 = new TPad("padTop_sigma2", "", 0.0, 0.0, 1.0, 0.3);
+  padTop_sigma2->SetMargin(0.18, 0.02, 0.00, 0.16);
+  padBot_sigma2->SetMargin(0.18, 0.02, 0.30, 0.00);
+  padTop_sigma2->Draw();
+  padBot_sigma2->Draw();
+  
+  sigma2_nominal_mc_gN->SetLineColor(kAzure+2);
+  sigma2_nominal_mc_gN->SetLineWidth(2);
+  sigma2_nominal_mc_gN->SetMarkerColor(kAzure+2);
+  sigma2_nominal_mc_gN->SetMarkerStyle(20);
+  
+  sigma2_nominal_mc_Ng->SetLineColor(kPink-8);
+  sigma2_nominal_mc_Ng->SetLineWidth(2);
+  sigma2_nominal_mc_Ng->SetMarkerColor(kPink-8);
+  sigma2_nominal_mc_Ng->SetMarkerStyle(20);
+  
+  sigma2_nominal_data_gN->SetLineColor(kAzure-9);
+  sigma2_nominal_data_gN->SetLineWidth(2);
+  sigma2_nominal_data_gN->SetMarkerColor(kAzure-9);
+  sigma2_nominal_data_gN->SetMarkerStyle(24);
+  
+  sigma2_nominal_data_Ng->SetLineColor(kPink+1);
+  sigma2_nominal_data_Ng->SetLineWidth(2);
+  sigma2_nominal_data_Ng->SetMarkerColor(kPink+1);
+  sigma2_nominal_data_Ng->SetMarkerStyle(24);
+  
+  sigma2_nominal_ratio_mc->SetLineColor(kViolet+2);
+  sigma2_nominal_ratio_mc->SetLineWidth(2);
+  sigma2_nominal_ratio_mc->SetMarkerColor(kViolet+2);
+  sigma2_nominal_ratio_mc->SetMarkerStyle(20);
+  
+  sigma2_nominal_ratio_data->SetLineColor(kViolet-9);
+  sigma2_nominal_ratio_data->SetLineWidth(2);
+  sigma2_nominal_ratio_data->SetMarkerColor(kViolet-9);
+  sigma2_nominal_ratio_data->SetMarkerStyle(24);
+  
+  sigma2_nominal_ratio_gN->SetLineColor(kAzure+1);
+  sigma2_nominal_ratio_gN->SetLineWidth(2);
+  sigma2_nominal_ratio_gN->SetMarkerColor(kAzure+1);
+  sigma2_nominal_ratio_gN->SetMarkerStyle(27);
+  sigma2_nominal_ratio_gN->SetMarkerSize(1.4);
+  
+  sigma2_nominal_ratio_Ng->SetLineColor(kPink-9);
+  sigma2_nominal_ratio_Ng->SetLineWidth(2);
+  sigma2_nominal_ratio_Ng->SetMarkerColor(kPink-9);
+  sigma2_nominal_ratio_Ng->SetMarkerStyle(27);
+  sigma2_nominal_ratio_Ng->SetMarkerSize(1.4);
+  
+  padTop_sigma2->cd();
+  sigma2_hist->Draw();
+  sigma2_hist->SetLabelSize(0.03/0.7, "Y");
+  sigma2_hist->SetTitleSize(0.035/0.7, "Y");
+  sigma2_nominal_data_gN->Draw("same");
+  sigma2_nominal_data_Ng->Draw("same");
+  sigma2_nominal_mc_gN->Draw("same");
+  sigma2_nominal_mc_Ng->Draw("same");
+  gStyle->SetOptStat(0);
+  
+  padBot_sigma2->cd();
+  sigma2_ratio->Draw();
+  sigma2_ratio->SetLabelSize(0.03/0.3, "XY");
+  sigma2_ratio->SetTitleSize(0.035/0.3, "XY");
+  sigma2_ratio->SetTitleOffset(0.4, "Y");
+  unity->Draw();
+  sigma2_nominal_ratio_mc->Draw("same");
+  sigma2_nominal_ratio_data->Draw("same");
+  sigma2_nominal_ratio_gN->Draw("same");
+  sigma2_nominal_ratio_Ng->Draw("same");
+  gStyle->SetOptStat(0);
+  
+  canvas_sigma2->cd();
+  canvas_sigma2->Update();
+  legend->Draw();
+  canvas_sigma2->SaveAs(Form("plot/SystEval_Cuts/%s_sigma2_vs_y.pdf", plotLabel.c_str()));
+  
+  delete canvas_sigma1;
+  delete sigma1_nominal_mc_gN;
+  delete sigma1_nominal_mc_Ng;
+  delete sigma1_nominal_data_gN;
+  delete sigma1_nominal_data_Ng;
+  delete sigma1_nominal_ratio_mc;
+  delete sigma1_nominal_ratio_data;
+  delete sigma1_nominal_ratio_gN;
+  delete sigma1_nominal_ratio_Ng;
+  delete sigma1_ratio;
+  delete sigma1_hist;
+  delete canvas_sigma2;
+  delete sigma2_nominal_mc_gN;
+  delete sigma2_nominal_mc_Ng;
+  delete sigma2_nominal_data_gN;
+  delete sigma2_nominal_data_Ng;
+  delete sigma2_nominal_ratio_mc;
+  delete sigma2_nominal_ratio_data;
+  delete sigma2_nominal_ratio_gN;
+  delete sigma2_nominal_ratio_Ng;
+  delete sigma2_ratio;
+  delete sigma2_hist;
+}
+
 void cuts_rawYield_vs_m(
   vector<string> nominalDirs,
   vector<string> systDalphaDirs,
@@ -3180,7 +3485,7 @@ void cuts_corrYield_rawYield_vs_DCut(
   }
 }
 
-void plotSystematicsEval()
+void plotEvalSystematics()
 {
   int isGammaN[2] = {1, 0};
   const int nPtBins = 1;
@@ -3295,87 +3600,97 @@ void plotSystematicsEval()
 //  );
     }
   }
-  const int nDtrkPtBins = 6;
-  double DtrkPtBins[nDtrkPtBins+1] = {
-    0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25};
-  string DtrkPtLabels[nDtrkPtBins+1] = {
-    "_070", "_080", "_090", "_100", "_110", "_120"};
-  int DtrkPtRefBins[nYBins] = {3, 3, 3, 3};
-  cuts_corrYield_rawYield_vs_DCut(
+  
+  sigma_gN_Ng_vs_y(
     systSubdir_gN,
     systSubdir_Ng,
     "2.0 #leq D_{p_{T}} < 5.0 (GeV)", // plot title
-    "pt2-5_yields_vs_DtrkPt", // plot tag (for filename)
-    "systDtrkPt", // DCut dir
-    "DtrkPt Cut (GeV)", // DCut X-axis label
-    nDtrkPtBins, // nDCutBins
-    DtrkPtBins, // DCutBins
-    DtrkPtLabels, // DCutLabels
+    "pt2-5", // plot tag (for filename)
     nYBins,
-    yBins,
-    DtrkPtRefBins
+    yBins
   );
   
-  const int nDsvpvBins = 5;
-  double DsvpvBins[nDsvpvBins+1] = {
-    1.875, 2.125, 2.375, 2.635, 2.875, 3.125};
-  string DsvpvLabels[nDsvpvBins+1] = {
-    "_200", "_225", "_250", "_275", "_300"};
-  int DsvpvRefBins[nYBins] = {2, 2, 2, 2};
-  cuts_corrYield_rawYield_vs_DCut(
-    systSubdir_gN,
-    systSubdir_Ng,
-    "2.0 #leq D_{p_{T}} < 5.0 (GeV)", // plot title
-    "pt2-5_yields_vs_DsvpvSig", // plot tag (for filename)
-    "systDsvpv", // DCut dir
-    "Dsvpv Significance Cut", // DCut X-axis label
-    nDsvpvBins, // nDCutBins
-    DsvpvBins, // DCutBins
-    DsvpvLabels, // DCutLabels
-    nYBins,
-    yBins,
-    DsvpvRefBins
-  );
-  
-  const int nDalphaBins = 5;
-  double DalphaBins[nDalphaBins+1] = {
-    0.15, 0.25, 0.35, 0.45, 0.55, 0.65};
-  string DalphaLabels[nDalphaBins+1] = {
-    "_020", "_030", "_040", "_050", "_060"};
-  int DalphaRefBins[nYBins] = {1, 4, 4, 1};
-  cuts_corrYield_rawYield_vs_DCut(
-    systSubdir_gN,
-    systSubdir_Ng,
-    "2.0 #leq D_{p_{T}} < 5.0 (GeV)", // plot title
-    "pt2-5_yields_vs_Dalpha", // plot tag (for filename)
-    "systDalpha", // DCut dir
-    "Dalpha Cut (GeV)", // DCut X-axis label
-    nDalphaBins, // nDCutBins
-    DalphaBins, // DCutBins
-    DalphaLabels, // DCutLabels
-    nYBins,
-    yBins,
-    DalphaRefBins
-  );
-  
-  const int nDchi2clBins = 6;
-  double Dchi2clBins[nDchi2clBins+1] = {
-    0.025, 0.075, 0.125, 0.175, 0.225, 0.275, 0.325};
-  string Dchi2clLabels[nDchi2clBins+1] = {
-    "_005", "_010", "_015", "_020", "_025", "_030"};
-  int Dchi2clRefBins[nYBins] = {1, 1, 1, 1};
-  cuts_corrYield_rawYield_vs_DCut(
-    systSubdir_gN,
-    systSubdir_Ng,
-    "2.0 #leq D_{p_{T}} < 5.0 (GeV)", // plot title
-    "pt2-5_yields_vs_Dchi2cl", // plot tag (for filename)
-    "systDchi2cl", // DCut dir
-    "Dchi2cl Cut", // DCut X-axis label
-    nDchi2clBins, // nDCutBins
-    Dchi2clBins, // DCutBins
-    Dchi2clLabels, // DCutLabels
-    nYBins,
-    yBins,
-    Dchi2clRefBins
-  );
+//  const int nDtrkPtBins = 6;
+//  double DtrkPtBins[nDtrkPtBins+1] = {
+//    0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25};
+//  string DtrkPtLabels[nDtrkPtBins+1] = {
+//    "_070", "_080", "_090", "_100", "_110", "_120"};
+//  int DtrkPtRefBins[nYBins] = {3, 3, 3, 3};
+//  cuts_corrYield_rawYield_vs_DCut(
+//    systSubdir_gN,
+//    systSubdir_Ng,
+//    "2.0 #leq D_{p_{T}} < 5.0 (GeV)", // plot title
+//    "pt2-5_yields_vs_DtrkPt", // plot tag (for filename)
+//    "systDtrkPt", // DCut dir
+//    "DtrkPt Cut (GeV)", // DCut X-axis label
+//    nDtrkPtBins, // nDCutBins
+//    DtrkPtBins, // DCutBins
+//    DtrkPtLabels, // DCutLabels
+//    nYBins,
+//    yBins,
+//    DtrkPtRefBins
+//  );
+//  
+//  const int nDsvpvBins = 5;
+//  double DsvpvBins[nDsvpvBins+1] = {
+//    1.875, 2.125, 2.375, 2.635, 2.875, 3.125};
+//  string DsvpvLabels[nDsvpvBins+1] = {
+//    "_200", "_225", "_250", "_275", "_300"};
+//  int DsvpvRefBins[nYBins] = {2, 2, 2, 2};
+//  cuts_corrYield_rawYield_vs_DCut(
+//    systSubdir_gN,
+//    systSubdir_Ng,
+//    "2.0 #leq D_{p_{T}} < 5.0 (GeV)", // plot title
+//    "pt2-5_yields_vs_DsvpvSig", // plot tag (for filename)
+//    "systDsvpv", // DCut dir
+//    "Dsvpv Significance Cut", // DCut X-axis label
+//    nDsvpvBins, // nDCutBins
+//    DsvpvBins, // DCutBins
+//    DsvpvLabels, // DCutLabels
+//    nYBins,
+//    yBins,
+//    DsvpvRefBins
+//  );
+//  
+//  const int nDalphaBins = 5;
+//  double DalphaBins[nDalphaBins+1] = {
+//    0.15, 0.25, 0.35, 0.45, 0.55, 0.65};
+//  string DalphaLabels[nDalphaBins+1] = {
+//    "_020", "_030", "_040", "_050", "_060"};
+//  int DalphaRefBins[nYBins] = {1, 4, 4, 1};
+//  cuts_corrYield_rawYield_vs_DCut(
+//    systSubdir_gN,
+//    systSubdir_Ng,
+//    "2.0 #leq D_{p_{T}} < 5.0 (GeV)", // plot title
+//    "pt2-5_yields_vs_Dalpha", // plot tag (for filename)
+//    "systDalpha", // DCut dir
+//    "Dalpha Cut (GeV)", // DCut X-axis label
+//    nDalphaBins, // nDCutBins
+//    DalphaBins, // DCutBins
+//    DalphaLabels, // DCutLabels
+//    nYBins,
+//    yBins,
+//    DalphaRefBins
+//  );
+//  
+//  const int nDchi2clBins = 6;
+//  double Dchi2clBins[nDchi2clBins+1] = {
+//    0.025, 0.075, 0.125, 0.175, 0.225, 0.275, 0.325};
+//  string Dchi2clLabels[nDchi2clBins+1] = {
+//    "_005", "_010", "_015", "_020", "_025", "_030"};
+//  int Dchi2clRefBins[nYBins] = {1, 1, 1, 1};
+//  cuts_corrYield_rawYield_vs_DCut(
+//    systSubdir_gN,
+//    systSubdir_Ng,
+//    "2.0 #leq D_{p_{T}} < 5.0 (GeV)", // plot title
+//    "pt2-5_yields_vs_Dchi2cl", // plot tag (for filename)
+//    "systDchi2cl", // DCut dir
+//    "Dchi2cl Cut", // DCut X-axis label
+//    nDchi2clBins, // nDCutBins
+//    Dchi2clBins, // DCutBins
+//    Dchi2clLabels, // DCutLabels
+//    nYBins,
+//    yBins,
+//    Dchi2clRefBins
+//  );
 }
