@@ -5,7 +5,7 @@
 # optional flag: -c , runs clean.sh before processing configs
 
 SAMPLE_DIR="pt2-5_sampleSettings"
-SAMPLE_VERSION="_skimV4"
+SAMPLE_VERSION="_skimV4_mcReweighting"
 SAMPLE_LIST=(
   "fullAnalysis$SAMPLE_VERSION.json"
   "systDalpha$SAMPLE_VERSION.json"
@@ -15,7 +15,7 @@ SAMPLE_LIST=(
   "systRapGapLoose$SAMPLE_VERSION.json"
   "systRapGapTight$SAMPLE_VERSION.json"
 )
-MASSFIT_DIR="pt2-5_massfitSettings"
+MASSFIT_DIR="pt2-5_fitSettings"
 MASSFIT_VERSION="_useGammaNForNgammaForFitFunc"
 MASSFIT_LIST=(
   "fullAnalysis$MASSFIT_VERSION.json"
