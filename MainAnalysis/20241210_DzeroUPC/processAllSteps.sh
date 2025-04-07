@@ -5,7 +5,7 @@
 # optional flag: -c , runs clean.sh before processing configs
 
 SAMPLE_DIR="pt2-5_sampleSettings"
-SAMPLE_VERSION="_skimV4_mcReweighting"
+SAMPLE_VERSION="_skimV4_mcReweighted"
 SAMPLE_LIST=(
   "fullAnalysis$SAMPLE_VERSION.json"
   "systDalpha$SAMPLE_VERSION.json"

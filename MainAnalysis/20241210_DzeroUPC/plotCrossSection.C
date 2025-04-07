@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
   vector<double> systFitUncert(nPoints);
   vector<double> systFitSigMeanUncert(nPoints);
   vector<double> systFitSigAlphaUncert(nPoints);
-  // vector<double> systFitCombUncert(nPoints);
+  //vector<double> systFitCombUncert(nPoints);
   vector<double> systFitPkBgUncert(nPoints);
   vector<double> systMassWindowUncert(nPoints);
   for (int i = 0; i < nPoints; ++i)
@@ -210,8 +210,8 @@ int main(int argc, char *argv[])
     systDchi2clUncert[i]  = TMath::Abs(systDchi2clCorrectedYieldValues[i] - correctedYieldValues[i]);
     systFitSigMeanUncert[i]  = TMath::Abs(systFitSigMeanCorrectedYieldValues[i] - correctedYieldValues[i]);
     systFitSigAlphaUncert[i] = TMath::Abs(systFitSigAlphaCorrectedYieldValues[i] - correctedYieldValues[i]);
-    if (UseSystFitComb) systFitCombUncert[i]  = TMath::Abs(systFitCombCorrectedYieldValues[i] - correctedYieldValues[i]);
-    else systFitCombUncert[i] = 0.;
+    //if (UseSystFitComb) systFitCombUncert[i]  = TMath::Abs(systFitCombCorrectedYieldValues[i] - correctedYieldValues[i]);
+    //else systFitCombUncert[i] = 0.;
     systFitPkBgUncert[i]  = TMath::Abs(systFitPkBgCorrectedYieldValues[i] - correctedYieldValues[i]);
     systMassWindowUncert[i]  = TMath::Abs(systMassWindowCorrectedYieldValues[i] - correctedYieldValues[i]);
     systFitUncert[i]      = TMath::Sqrt(
@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
   printRatioArr(systTotUncert, correctedYieldValues,          "  ", " Total        ", "  ");
   printRatioArr(systFitSigMeanUncert, correctedYieldValues,   "  ", " Fit:SigMean  ", "  ");
   printRatioArr(systFitSigAlphaUncert, correctedYieldValues,  "  ", " Fit:SigAlpha ", "  ");
-  if (UseSystFitComb) printRatioArr(systFitCombUncert, correctedYieldValues,      "  ", " Fit:Comb     ", "  ");
+  //if (UseSystFitComb) printRatioArr(systFitCombUncert, correctedYieldValues,      "  ", " Fit:Comb     ", "  ");
   printRatioArr(systFitPkBgUncert, correctedYieldValues,      "  ", " Fit:PkBg     ", "  ");
   printRatioArr(systMassWindowUncert, correctedYieldValues,   "  ", " Fit:MassWin  ", "  ");
   printArr(systTotUncert, ", ", "systTotUncert: ");

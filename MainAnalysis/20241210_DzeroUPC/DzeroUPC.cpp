@@ -382,7 +382,7 @@ int main(int argc, char *argv[]) {
                  DoSystRapGap, DoSystD,
                  DoGptGyReweighting, GptGyWeightFileName,
                  DoMultReweighting, MultWeightFileName,
-                 DoSystRapGap, DoSystD, DtrkPtCut, DsvpvCut, DalphaCut, Dchi2Cut);
+                 DtrkPtCut, DsvpvCut, DalphaCut, Dchi2Cut);
   par.input = CL.Get("Input", "mergedSample.root"); // Input file
   par.output = CL.Get("Output", "output.root");     // Output file
   par.nThread = CL.GetInt("nThread", 1);            // The number of threads to be used for parallel processing.
