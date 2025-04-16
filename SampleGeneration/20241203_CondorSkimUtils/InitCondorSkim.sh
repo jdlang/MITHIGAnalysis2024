@@ -46,9 +46,17 @@ JOB_STORAGE=${7}
 CMSSW_VERSION=${8}
 CONFIG_DIR=${9}
 MASTER_FILE_LIST=${10}
-REFRESH_PROXY=${11}
-DATA_YEAR=${12}
-MAX_JOBS=${13:-0}
+CONFIG_Year=${11}
+CONFIG_TriggerRejection=${12}
+CONFIG_EventRejection=${13}
+CONFIG_ZDCGapRejection=${14}
+CONFIG_DRejection=${15}
+CONFIG_ZDCMinus=${16}
+CONFIG_ZDCPlus=${17}
+CONFIG_IsData=${18}
+CONFIG_PFTree=${19}
+REFRESH_PROXY=${20}
+MAX_JOBS=${21:-0}
 
 if [ $# -ne $n_args || $# -ne $((n_args - 1)) ]; then
   echo "Insufficient number of arguments given!"
@@ -62,19 +70,29 @@ else
   echo "SOURCE_DIR:       $SOURCE_DIR"
   echo "OUTPUT_SERVER:    $OUTPUT_SERVER"
   echo "OUTPUT_DIR:       $OUTPUT_DIR"
-  echo "DATA_YEAR:        $DATA_YEAR"
   echo "FILES_PER_JOB:    $FILES_PER_JOB"
   echo "JOB_MEMORY:       $JOB_MEMORY"
   echo "JOB_STORAGE:      $JOB_STORAGE"
   echo "CMSSW_VERSION:    $CMSSW_VERSION"
   echo "CONFIG_DIR:       $CONFIG_DIR"
   echo "MASTER_FILE_LIST: $MASTER_FILE_LIST"
+  echo "SKIM CONFIGS ----"
+  echo "  Year:           $CONFIG_Year"
+  echo "  TriggerReject:  $CONFIG_TriggerRejection"
+  echo "  EventReject:    $CONFIG_EventRejection"
+  echo "  ZDCGapReject:   $CONFIG_ZDCGapRejection"
+  echo "  DReject:        $CONFIG_DRejection"
+  echo "  ZDCMinus:       $CONFIG_ZDCMinus"
+  echo "  ZDCPlus:        $CONFIG_ZDCPlus"
+  echo "  IsData:         $CONFIG_IsData"
+  echo "  PFTree:         $CONFIG_PFTree"
   echo "REFRESH_PROXY:    $REFRESH_PROXY"
   if [ $MAX_JOBS -ne 0 ]; then
     echo "MAX_JOBS:         $MAX_JOBS"
   fi
 fi
 
+# Refresh VOMS proxy
 if [[ $REFRESH_PROXY -eq 1 ]]; then
   echo ">>> Refresh VOMS proxy"
   voms-proxy-init -rfc -voms cms -valid 120:00
@@ -82,13 +100,21 @@ if [[ $REFRESH_PROXY -eq 1 ]]; then
   export PROXYFILE=~/x509up_u$(id -u)
 fi
 
-$ProjectBase/$CONDOR_SUBDIR/MakeAnalysisTar.sh
+# Remake .tar of key analysis scripts and libraries
+if ! find "filename" -maxdepth 0 -type f -newermt "$(date +%Y-%m-%d)" | grep -q .; then
+  $ProjectBase/$CONDOR_SUBDIR/MakeAnalysisTar.sh
+fi
 
 echo ">>> Setting up local workspace"
 xrdfs $OUTPUT_SERVER mkdir -p $OUTPUT_DIR
 mkdir -p $CONFIG_DIR
+
+# Remake file list
+if [ ! -e "$MASTER_FILE_LIST" ]; then
 echo ">>> Making master file list $MASTER_FILE_LIST"
-$ProjectBase/$CONDOR_SUBDIR/MakeXrdFileList.sh $SOURCE_SERVER $SOURCE_DIR $MASTER_FILE_LIST
+  MAX_FILES=$((MAX_JOBS * FILES_PER_JOB))
+  $ProjectBase/$CONDOR_SUBDIR/MakeXrdFileList.sh $SOURCE_SERVER $SOURCE_DIR $MASTER_FILE_LIST $MAX_FILES
+fi
 
 # Function for job submission
 submit_condor_jobs() {
@@ -97,11 +123,11 @@ submit_condor_jobs() {
   local JOB_COUNTER=${3}
   echo "Making configs for $JOB_NAME"
   OUTPUT_PATH="${OUTPUT_DIR}/skim_${JOB_COUNTER}.root"
-  $ProjectBase/$CONDOR_SUBDIR/MakeCondorConfigs.sh $JOB_NAME $JOB_LIST $CONFIG_DIR $OUTPUT_SERVER $OUTPUT_PATH $PROXYFILE $JOB_MEMORY $JOB_STORAGE $CMSSW_VERSION $ANALYSIS_SUBDIR $DATA_YEAR
+  $ProjectBase/$CONDOR_SUBDIR/MakeCondorConfigs.sh $JOB_NAME $JOB_LIST $CONFIG_DIR $OUTPUT_SERVER $OUTPUT_PATH $PROXYFILE $JOB_MEMORY $JOB_STORAGE $CMSSW_VERSION $ANALYSIS_SUBDIR $CONFIG_Year $CONFIG_TriggerRejection $CONFIG_EventRejection $CONFIG_ZDCGapRejection $CONFIG_DRejection $CONFIG_ZDCMinus $CONFIG_ZDCPlus $CONFIG_IsData $CONFIG_PFTree
   wait
   echo "Submitted $JOB_NAME"
   echo ""
-  sleep 0.5
+  sleep 0.1
   return 0
 }
 

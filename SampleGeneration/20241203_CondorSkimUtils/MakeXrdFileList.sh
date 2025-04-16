@@ -6,6 +6,8 @@ XROOTD_SERVER=${1}
 SOURCE_DIR=${2}
 # Filename for output list
 FILE_LIST=${3}
+# Set limit on max number of jobs
+MAX_FILES=${4:-0}
 
 # Make list of all files in parent dir
 rm $FILE_LIST
@@ -26,12 +28,15 @@ while read -r LINE; do
   if [[ "$LINE" =~ \.root$ ]]; then
     echo "$XROOTD_SERVER/$LINE" >> "$TEMP_LIST"
     wait
-    FILE_COUNTER=$((FILE_COUNTER + 1))
+    ((FILE_COUNTER++))
     if ! (( $FILE_COUNTER % 1000 )); then
       echo "Found $FILE_COUNTER files..."
     fi
   else
     continue
+  fi
+  if [ $FILE_COUNTER -eq $MAX_FILES ]; then
+    break
   fi
 done < $FILE_LIST
 # Replace the original file with the temp file

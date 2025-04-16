@@ -10,7 +10,15 @@ JOB_MEMORY=${7}
 JOB_STORAGE=${8}
 CMSSW_VERSION=${9}
 ANALYSIS_SUBDIR=${10}
-YEAR=${11}
+CONFIG_Year=${11}
+CONFIG_TriggerRejection=${12}
+CONFIG_EventRejection=${13}
+CONFIG_ZDCGapRejection=${14}
+CONFIG_DRejection=${15}
+CONFIG_ZDCMinus=${16}
+CONFIG_ZDCPlus=${17}
+CONFIG_IsData=${18}
+CONFIG_PFTree=${19}
 
 SCRIPT="${CONFIG_DIR}/${JOB_NAME}_script.sh"
 CONFIG="${CONFIG_DIR}/${JOB_NAME}_config.condor"
@@ -18,16 +26,9 @@ JOB_LIST_NAME=$(basename "$JOB_LIST")
 PROXYFILE_NAME=$(basename "$PROXYFILE")
 OUTPUT_DIR=$(dirname "$OUTPUT_PATH")
 
-ZDCM_THRESHOLD=1000
-ZDCP_THRESHOLD=1100
-if [[ $YEAR -eq 2024 ]]; then
-  ZDCM_THRESHOLD=900
-  ZDCP_THRESHOLD=900
-fi
-
 # MAKE CONDOR SCRIPT ==========================================================
 rm $SCRIPT
-sleep 0.5
+sleep 0.1
 cat > $SCRIPT <<EOF1
 #!/bin/bash
 
@@ -79,49 +80,98 @@ fi
 # Skimming
 echo ">>> Running skimmer"
 mkdir -p "output"
+FAILED_SKIM_LIST="${JOB_NAME}_failures.txt"
+
 COUNTER=0
-ROOT_IN_LIST="${JOB_NAME}_rootIn.txt"
-ROOT_OUT_LIST="${JOB_NAME}_rootOut.txt"
-while read -r ROOT_IN_T2; do
+XRD_RETRIES=2
+while read -r ROOT_IN_REMOTE; do
   ROOT_IN_LOCAL="forest_\${COUNTER}.root"
   ROOT_OUT="output/${JOB_NAME}_\${COUNTER}.root"
-  xrdcp -N -S 4 --retry 2 --retry-policy continue --notlsok \$ROOT_IN_T2 \$ROOT_IN_LOCAL
-  wait
-  echo \$(ls -lh \$ROOT_IN_LOCAL) >> \$ROOT_IN_LIST
-  if ! [ -f "\$ROOT_IN_LOCAL" ]; then
-    echo "--- ERROR! Missing root file: \$ROOT_IN_LOCAL"
-    continue
-  fi
-  echo "--- Processing file: \$ROOT_IN_LOCAL"
-  ./Execute --Input \$ROOT_IN_LOCAL \\
-    --Output \$ROOT_OUT \\
-    --Year 2023 \\
-    --ApplyTriggerRejection 2 \\
-    --ApplyEventRejection true \\
-    --ApplyZDCGapRejection true \\
-    --ApplyDRejection 2 \\
-    --ZDCMinus1nThreshold 1000 \\
-    --ZDCPlus1nThreshold 1100 \\
-    --IsData true \\
-    --PFTree particleFlowAnalyser/pftree \\
-    --HideProgressBar true &
-  wait
-  echo \$(ls -lh \$ROOT_OUT) >> \$ROOT_OUT_LIST
+  INPUT_SERVER=\$(echo "\$ROOT_IN_REMOTE" | awk -F'//' '{print \$1"//"\$2"/"}')/
+  INPUT_PATH=\$(echo "\$ROOT_IN_REMOTE" | awk -F'//' '{print \$3}')
+  
+  XRD_LOOP=0
+  while (( \$XRD_LOOP <= \$XRD_RETRIES )); do
+    declare XRD_PID
+    if [ -f "\$ROOT_IN_LOCAL" ]; then
+      xrdcp -N --notlsok --continue "\$ROOT_IN_REMOTE" "\$ROOT_IN_LOCAL" & XRD_PID=\$!
+    else
+      xrdcp -N --notlsok "\$ROOT_IN_REMOTE" "\$ROOT_IN_LOCAL" & XRD_PID=\$!
+    fi
+    sleep 1
+    wait \$XRD_PID
+    XRD_STATUS=\$?
+
+    if (( \$XRD_STATUS == 0 )); then
+      INPUT_SIZE=\$(xrdfs "\$INPUT_SERVER" ls -l "\$INPUT_PATH" | awk '{print \$4}')
+      INPUT_SIZE=\$((INPUT_SIZE))
+      wait
+      LOCAL_SIZE=\$(ls -l "\$ROOT_IN_LOCAL" | awk '{print \$5}')
+      LOCAL_SIZE=\$((LOCAL_SIZE))
+      wait
+      if (( \$LOCAL_SIZE == \$INPUT_SIZE )); then
+        echo "--- Processing file: \$ROOT_IN_LOCAL"
+        ./Execute --Input \$ROOT_IN_LOCAL \\
+          --Output \$ROOT_OUT \\
+          --Year $CONFIG_Year \\
+          --ApplyTriggerRejection $CONFIG_TriggerRejection \\
+          --ApplyEventRejection $CONFIG_EventRejection \\
+          --ApplyZDCGapRejection $CONFIG_ZDCGapRejection \\
+          --ApplyDRejection $CONFIG_DRejection \\
+          --ZDCMinus1nThreshold $CONFIG_ZDCMinus \\
+          --ZDCPlus1nThreshold $CONFIG_ZDCPlus \\
+          --IsData $CONFIG_IsData \\
+          --PFTree $CONFIG_PFTree \\
+          --HideProgressBar true \\
+          & SKIM_PID=\$!
+        sleep 1
+        wait \$SKIM_PID
+        break
+      elif (( \$XRD_LOOP < \$XRD_RETRIES )); then
+        rm \$ROOT_IN_LOCAL
+      elif (( \$XRD_LOOP == \$XRD_RETRIES )); then
+        echo "--- Copying failed (no copy): \$ROOT_IN_LOCAL"
+        echo \$ROOT_IN_REMOTE >> \$FAILED_SKIM_LIST
+        break
+      fi
+    elif (( \$XRD_LOOP == \$XRD_RETRIES )); then
+      echo "--- Copying failed (no copy): \$ROOT_IN_LOCAL"
+      echo \$ROOT_IN_REMOTE >> \$FAILED_SKIM_LIST
+      break
+    fi
+    ((XRD_LOOP++))
+  done
   rm \$ROOT_IN_LOCAL
+  wait
   ((COUNTER++))
 done < $JOB_LIST_NAME
 echo ">>> Completed \$COUNTER jobs!"
 
 # Merge and transfer
-echo ">>> Merging root files"
-hadd -ff -k ${JOB_NAME}_merged.root output/${JOB_NAME}_*.root
-echo \$(ls -lh \{JOB_NAME}_merged.root) >> \$ROOT_OUT_LIST
-echo ">>> Transferring merged root file to T2"
-xrdcp -N -S 4 --retry 2 --retry-policy continue --notlsok ${JOB_NAME}_merged.root ${OUTPUT_SERVER}${OUTPUT_PATH}
-if [ \$SAVE_IO_LISTS -eq 1 ]; then
-  xrdfs ${OUTPUT_SERVER} mkdir -p ${OUTPUT_DIR}/file_lists
-  xrdcp -N --retry 2 --retry-policy continue --notlsok \$ROOT_IN_LIST ${OUTPUT_SERVER}${OUTPUT_DIR}/file_lists/\$ROOT_IN_LIST
-  xrdcp -N --retry 2 --retry-policy continue --notlsok \$ROOT_OUT_LIST ${OUTPUT_SERVER}${OUTPUT_DIR}/file_lists/\$ROOT_OUT_LIST
+if find "output/" -mindepth 1 -type f | read; then
+  echo ">>> Merging root files"
+  hadd -ff -k ${JOB_NAME}_merged.root output/${JOB_NAME}_*.root
+
+  echo ">>> Transferring merged root file to \$OUTPUT_SERVER"
+  XRD_LOOP=0
+  while (( \$XRD_LOOP <= \$XRD_RETRIES )); do
+    ((XRD_LOOP++))
+    xrdcp -N --notlsok ${JOB_NAME}_merged.root ${OUTPUT_SERVER}${OUTPUT_PATH} & XRD_PID=\$!
+    wait \$XRD_PID
+    XRD_STATUS=\$?
+    if (( \$XRD_STATUS == 0 )); then
+      LOCAL_SIZE=\$(ls -l "${JOB_NAME}_merged.root" | awk '{print \$5}')
+      LOCAL_SIZE=\$((LOCAL_SIZE))
+      OUTPUT_SIZE=\$(xrdfs "$OUTPUT_SERVER" ls -l "$OUTPUT_PATH" | awk '{print \$2}')
+      OUTPUT_SIZE=\$((OUTPUT_SIZE))
+      if (( \$LOCAL_SIZE == \$OUTPUT_SIZE )); then
+        break
+      fi
+    fi
+  done
+
+  xrdfs ${OUTPUT_SERVER} mkdir -p ${OUTPUT_DIR}/failed_skims
+  xrdcp -N --notlsok \$FAILED_SKIM_LIST ${OUTPUT_SERVER}${OUTPUT_DIR}/failed_skims/\$FAILED_SKIM_LIST
 fi
 echo ">>> Done!"
 
@@ -133,7 +183,7 @@ echo "Made script: $SCRIPT"
 
 # MAKE CONDOR CONFIG ==========================================================
 rm $CONFIG
-sleep 0.5
+sleep 0.1
 cat > $CONFIG <<EOF2
 ### Job settings
 Universe                = vanilla
@@ -171,6 +221,6 @@ EOF2
 # -----------------------------------------------------------------------------
 echo "Made config: $CONFIG"
 
-sleep 0.5
+sleep 0.1
 condor_submit $CONFIG
 wait
