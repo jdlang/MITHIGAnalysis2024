@@ -218,13 +218,16 @@ public:
             continue;
           if (MDzeroUPC->Dy->at(j) > par.MaxDzeroY)
             continue;
-          // if (MDzeroUPC->DpassCut23PAS->at(j) == false)
-          if (par.DoSystD==0 && MDzeroUPC->DpassCut23PAS->at(j) == false) continue;
-          // if (par.DoSystD==0 && MDzeroUPC->DpassCut23LowPt->at(j) == false) continue;
-          if (par.DoSystD==1 && MDzeroUPC->DpassCut23PASSystDsvpvSig->at(j) == false) continue;
-          if (par.DoSystD==2 && MDzeroUPC->DpassCut23PASSystDtrkPt->at(j) == false) continue;
-          if (par.DoSystD==3 && MDzeroUPC->DpassCut23PASSystDalpha->at(j) == false) continue;
-          if (par.DoSystD==4 && MDzeroUPC->DpassCut23PASSystDchi2cl->at(j) == false) continue;
+//          if (par.DoSystD==0 && MDzeroUPC->DpassCut23PAS->at(j) == false) continue;
+//          if (par.DoSystD==1 && MDzeroUPC->DpassCut23PASSystDsvpvSig->at(j) == false) continue;
+//          if (par.DoSystD==2 && MDzeroUPC->DpassCut23PASSystDtrkPt->at(j) == false) continue;
+//          if (par.DoSystD==3 && MDzeroUPC->DpassCut23PASSystDalpha->at(j) == false) continue;
+//          if (par.DoSystD==4 && MDzeroUPC->DpassCut23PASSystDchi2cl->at(j) == false) continue;
+          if (par.DoSystD==0 && MDzeroUPC->DpassCutDefault->at(j) == false) continue;
+          if (par.DoSystD==1 && MDzeroUPC->DpassCutSystDsvpvSig->at(j) == false) continue;
+          if (par.DoSystD==2 && MDzeroUPC->DpassCutSystDtrkPt->at(j) == false) continue;
+          if (par.DoSystD==3 && MDzeroUPC->DpassCutSystDalpha->at(j) == false) continue;
+          if (par.DoSystD==4 && MDzeroUPC->DpassCutSystDchi2cl->at(j) == false) continue;
 
           hDmass->Fill((*MDzeroUPC->Dmass)[j]);
           if (!par.IsData) {

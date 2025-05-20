@@ -28,17 +28,22 @@ PT_Y_BINS=(
   2   5    0    1
   2   5    1    2
 )
+MASSFIT_BIN_SETS=(
+  "2,5,-2,-1,0,1,2"
+)
 
 MAKE_MICROTREE_CFGS=1
 MAKE_MASSFIT_CFGS=1
 MAKE_PLOT_CFGS=0
-DO_REWEIGHTING=1
+DO_REWEIGHTING=0
 USE_GAMMAN_FOR_NGAMMA=1
 MERGER_MIRROR_YBINS=1
 
-SKIM_DATA="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsData/20250312_ForestDfinderData23Skim_v4.root"
-SKIM_MC_FORCED_D0_A="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250324_v4_Pthat0_ForceD0Decay_BeamA/mergedfile.root"
-SKIM_MC_FORCED_D0_B="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250324_v4_Pthat0_ForceD0Decay_BeamB/mergedfile.root"
+
+SKIM_DATA="/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250519_Skim_2023Data_Feb2025ReReco_HIForward0-9.root"
+#SKIM_DATA="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsData/20250312_ForestDfinderData23Skim_v4.root"
+SKIM_MC_FORCED_D0_A="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamA/mergedfile.root"
+SKIM_MC_FORCED_D0_B="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamB/mergedfile.root"
 SKIM_MC_INCLUSIVE_A="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250227_v4_OldPthat5_Inclusive_BeamA/mergedfile.root"
 SKIM_MC_INCLUSIVE_B="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250227_v4_OldPthat5_Inclusive_BeamA/mergedfile.root"
 GPT_GY_WEIGHT_DIR="../../WeightHandler/20250305_DzeroUPC_GptGyWeight/Weights"
@@ -111,6 +116,7 @@ EOF
       (( $isGammaN == 1 )) && input=$SKIM_MC_FORCED_D0_A || input=$SKIM_MC_FORCED_D0_B
     elif [[ "$microtreeRoot" == "MC_inclusive.root" ]]; then
       (( $isGammaN == 1 )) && input=$SKIM_MC_INCLUSIVE_A || input=$SKIM_MC_INCLUSIVE_B
+      (( $USE_GAMMAN_FOR_NGAMMA == 1 && $isGammaN == 0 )) && input=$SKIM_MC_INCLUSIVE_A
     fi
     local comma=""
     [[ $doReweighting -eq 1 && "$microtreeRoot" == "MC.root" ]] && comma=","
@@ -177,6 +183,8 @@ make_massfit_config() {
   yminMirror=$(( -1 * $ymax ))
   ymaxMirror=$(( -1 * $ymin ))
   mirrFileString="pt${ptmin}-${ptmax}_y${yminMirror}-${ymaxMirror}_IsGammaN${isGammaN}"
+  gNforNgFileString="pt${ptmin}-${ptmax}_y${yminMirror}-${ymaxMirror}_IsGammaN1"
+  gNforNgMirrFileString="pt${ptmin}-${ptmax}_y${ymin}-${ymax}_IsGammaN1"
   local dataInput="$configInput/$fileString/Data.root"
   local fitmcInputs="$configInput/$fileString/MC_inclusive.root"
   local sigswpInputs="$configInput/$fileString/MC.root"
@@ -185,13 +193,15 @@ make_massfit_config() {
     fitmcInputs="$fitmcInputs,$configInput/$mirrFileString/MC_inclusive.root"
   fi
   if (( $USE_GAMMAN_FOR_NGAMMA == 1 && $isGammaN == 0)); then
-    sigswpInputs="$configInput/$mirrFileString/MC.root"
-    effmcInputs="$configInput/$mirrFileString/MC.root"
+    fitmcInputs="$configInput/$gNforNgFileString/MC_inclusive.root"
+    if (( $MERGER_MIRROR_YBINS == 1 )); then
+      fitmcInputs="$fitmcInputs,$configInput/$gNforNgMirrFileString/MC_inclusive.root"
+    fi
   fi
   (( $doSystPkBg == 1 )) && doPkkk="false" || doPkkk="true"
   (( $doSystPkBg == 1 )) && doPkpp="false" || doPkpp="true"
-  (( $doSystSiglAlpha == 1 )) && sigAlphaRange="0.0" || sigAlphaRange="-1"
-  (( $doSystSiglMean == 1 )) && sigMeanRange="0.0" || sigMeanRange="-1"
+  (( $doSystSiglAlpha == 1 )) && sigAlphaRange="0.0" || sigAlphaRange="0.25"
+  (( $doSystSiglMean == 1 )) && sigMeanRange="0.0" || sigMeanRange="0.015"
   (( $doSystMassWindow == 1 )) && massWindow="1.66,2.26,48" || massWindow="1.66,2.16,40"
   
   echo "Making MassFit Config: $(basename $configOutput)"
@@ -199,7 +209,7 @@ make_massfit_config() {
   if [[ ! -e "$configOutput" ]]; then
 cat > $configOutput <<EOF
 {
-  "FitDir": "MassFit",
+  "FitDir": "$massfitDir",
   "MicroTrees": [
 EOF
   fi
@@ -208,7 +218,6 @@ cat >> $configOutput <<EOF
     {
       "dataInput": "$dataInput",
       "fitmcInputs": "$fitmcInputs",
-      "sigswpInputs": "$sigswpInputs",
       "effmcInput": "$effmcInputs",
       "doPkkk": $doPkkk,
       "doPkpp": $doPkpp,
@@ -232,6 +241,8 @@ EOF
 
 # Plot Configs
 make_plot_config() {
+  local pt_y_bins_set=${}
+  
   local configOutput=${1}
   local configInput=${2}
   local ptmin=${4}
@@ -346,7 +357,7 @@ for (( isGammaN=1 ; isGammaN >= 0 ; isGammaN-- )); do
       make_massfit_config $MASSFIT_systRapGapTight "systRapGapTight" "MassFit"\
         $ptmin $ptmax $ymin $ymax $isGammaN $isLastEntry 0 0 0 0
       make_massfit_config $MASSFIT_systFitPkBg "fullAnalysis"\
-        "MassFit_systFitPkbg" $ptmin $ptmax $ymin $ymax $isGammaN\
+        "MassFit_systFitPkBg" $ptmin $ptmax $ymin $ymax $isGammaN\
         $isLastEntry 1 0 0 0
       make_massfit_config $MASSFIT_systFitSiglAlpha "fullAnalysis"\
         "MassFit_systFitSiglAlpha" $ptmin $ptmax $ymin $ymax $isGammaN\
@@ -358,8 +369,37 @@ for (( isGammaN=1 ; isGammaN >= 0 ; isGammaN-- )); do
         "MassFit_systFitMassWindow" $ptmin $ptmax $ymin $ymax $isGammaN\
         $isLastEntry 0 0 0 1
     fi
-    if [[ "$MAKE_PLOT_CFGS" -eq "1" ]]; then
-      echo "plot config step goes here..."
-    fi
   done
+  if [[ "$MAKE_PLOT_CFGS" -eq "1" ]]; then
+    prev_ptmin=0
+    prev_ptmax=0
+    inputPoints=""
+    outputString=""
+    pt_y_bins_set=()
+    for (( i=0 ; i < ${#PT_Y_BINS[@]} ; i+=4 )); do
+      ptmin=${PT_Y_BINS[ $i + 0 ]}
+      ptmax=${PT_Y_BINS[ $i + 1 ]}
+      ymin=${PT_Y_BINS[ $i + 2 ]}
+      ymax=${PT_Y_BINS[ $i + 3 ]}
+      
+      fileString="fullAnalysis/pt${ptmin}-${ptmax}_y${ymin}-${ymax}_IsGammaN${isGammaN}/MassFit/correctedYields.md"
+      isLastEntry=0
+      (( $i == $((${#PT_Y_BINS[@]} - 4)) && $isGammaN == 0 )) && isLastEntry=1
+      if (( $ptmin != $prev_ptmin || $ptmax != $prev_ptmax )); then
+        make_plot_config $pt_y_bins_set
+        inputPoints=""
+        prev_ptmin=ptmin
+        prev_ptmax=ptmax
+        outputString="pt${ptmin}-${ptmax}_IsGammaN${isGammaN}"
+      else
+        pt_y_bins_set+=( ${PT_Y_BINS[ $i + 0 ]} )
+        pt_y_bins_set+=( ${PT_Y_BINS[ $i + 1 ]} )
+        pt_y_bins_set+=( ${PT_Y_BINS[ $i + 2 ]} )
+        pt_y_bins_set+=( ${PT_Y_BINS[ $i + 3 ]} )
+        inputPoints="$inputPoints,$fileString"
+      fi
+    done
+    
+    echo "plot config step goes here..."
+  fi
 done
