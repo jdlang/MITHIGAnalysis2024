@@ -40,47 +40,50 @@ MASSFIT_LIST=(
   "systRapGapLoose$MASSFIT_VERSION.json"
   "systRapGapTight$MASSFIT_VERSION.json"
 )
-PLOT_CFG_DIR="pt2-5_plotSettings"
-PLOT_VERSION=""
+PLOT_CFG_DIR="configs/plot"
 PLOT_LIST=(
-  "fullAnalysis$PLOT_VERSION.json"
+  "fullAnalysis_pt2-5_IsGammaN1.json"
+  "fullAnalysis_pt2-5_IsGammaN0.json"
 )
 
 # Parse args
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -s)
+    # Process only [s]amples
+    -s|--samples|--microtree)
       DO_MICROTREE=1
       DO_MASSFIT=0
       DO_PLOTS=0
       shift
       ;;
-    -m)
+    # Process only [m]assfit
+    -m|--massfit)
       DO_MICROTREE=0
       DO_MASSFIT=1
       DO_PLOTS=0
       shift
       ;;
-    -p)
+    # Process only [p]lots
+    -p|--plot)
       DO_MICROTREE=0
       DO_MASSFIT=0
       DO_PLOTS=1
       shift
       ;;
-    -n)
-      NOMINAL_ONLY=1
-      DO_MICROTREE=1
-      DO_MASSFIT=1
-      DO_PLOTS=1
-      shift
-      ;;
-    -a)
+    # Process [a]ll configs and steps
+    -a|--all)
       NOMINAL_ONLY=0
       DO_MICROTREE=1
       DO_MASSFIT=1
       DO_PLOTS=1
       shift
       ;;
+    # Process only [n]ominal configs
+    -n|--nominal)
+      NOMINAL_ONLY=1
+      shift
+      ;;
+    # Before processing, run [c]lean.sh
     -c|--clean)
       DO_CLEAN=1
       shift
@@ -136,7 +139,6 @@ if (( $DO_PLOTS == 1 )); then
     echo "Processing: $PLOT_CFG_DIR/$PLOT_JSON"
     bash plot.sh "$PLOT_CFG_DIR/$PLOT_JSON"
     wait
-    (( $NOMINAL_ONLY == 1 )) && break
   done
   wait
 else

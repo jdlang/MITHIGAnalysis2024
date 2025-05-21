@@ -34,11 +34,10 @@ MASSFIT_BIN_SETS=(
 
 MAKE_MICROTREE_CFGS=1
 MAKE_MASSFIT_CFGS=1
-MAKE_PLOT_CFGS=0
+MAKE_PLOT_CFGS=1
 DO_REWEIGHTING=0
 USE_GAMMAN_FOR_NGAMMA=1
 MERGER_MIRROR_YBINS=1
-
 
 SKIM_DATA="/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250519_Skim_2023Data_Feb2025ReReco_HIForward0-9.root"
 #SKIM_DATA="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsData/20250312_ForestDfinderData23Skim_v4.root"
@@ -77,6 +76,8 @@ MASSFIT_systFitSiglMean="$MASSFIT_CFG_DIR/systFitSiglMean.json"
 MASSFIT_systFitMassWindow="$MASSFIT_CFG_DIR/systFitMassWindow.json"
 
 PLOT_CFG_DIR="configs/plot"
+# NO file extension for this one - it is added later!
+PLOT_fullAnalysis="$PLOT_CFG_DIR/fullAnalysis"
 
 
 
@@ -241,58 +242,29 @@ EOF
 
 # Plot Configs
 make_plot_config() {
-  local pt_y_bins_set=${}
-  
   local configOutput=${1}
-  local configInput=${2}
+  local outputDir=${2}
+  local inputPoints=${3}
   local ptmin=${4}
   local ptmax=${5}
-  local ymin=${6}
-  local ymax=${7}
-  local isGammaN=${8}
-  local isLastEntry=${9}
+  local isGammaN=${6}
   
   echo "Making Plot Config: $(basename $configOutput)"
-  
-  # Make header
-  if [[ ! -e "$configOutput" ]]; then
-cat > $configOutput <<EOF
-{
-  "PlotDir": "plot/fullAnalysis/",
-  "Plots": [
-EOF
-  fi
-  
-  inputPoints=""
-  for (( iy=1 ; iy<${#yBins[@]} ; iy++)); do
-    ymin=${yBins[ $iy - 1 ]}
-    ymax=${yBins[ $iy ]}
-    fileString="pt${ptmin}-${ptmax}_y${ymin}-${ymax}_IsGammaN${isGammaN}"
-    if [[ -n $inputPoints ]]; then
-      inputPoints="fullAnalysis/$fileString/MassFit/correctedYields.md"
-    else
-      inputPoints="$inputPoints,fullAnalysis/$fileString/MassFit/correctedYields.md"
-    fi
-  done
   # Write config settings to file:
 cat >> $configOutput <<EOF
+{
+  "PlotDir": "$outputDir",
+  "Plots": [
     {
       "MinDzeroPT": $ptmin,
       "MaxDzeroPT": $ptmax,
       "IsGammaN": $isGammaN,
-      "InputPoints": $inputPoints,
+      "InputPoints": "$inputPoints",
       "UseMaxFitUncert": true
-EOF
-  # Close brackets:
-  if (( $isLastEntry == 1 )); then
-cat >> $configOutput <<EOF
     }
   ]
 }
 EOF
-  else
-    echo "    }," >> $configOutput
-  fi
   wait
   sleep 0.02
 }
@@ -373,33 +345,31 @@ for (( isGammaN=1 ; isGammaN >= 0 ; isGammaN-- )); do
   if [[ "$MAKE_PLOT_CFGS" -eq "1" ]]; then
     prev_ptmin=0
     prev_ptmax=0
+    configOutput=""
+    outputDir=""
     inputPoints=""
-    outputString=""
-    pt_y_bins_set=()
     for (( i=0 ; i < ${#PT_Y_BINS[@]} ; i+=4 )); do
       ptmin=${PT_Y_BINS[ $i + 0 ]}
       ptmax=${PT_Y_BINS[ $i + 1 ]}
       ymin=${PT_Y_BINS[ $i + 2 ]}
       ymax=${PT_Y_BINS[ $i + 3 ]}
-      
-      fileString="fullAnalysis/pt${ptmin}-${ptmax}_y${ymin}-${ymax}_IsGammaN${isGammaN}/MassFit/correctedYields.md"
-      isLastEntry=0
-      (( $i == $((${#PT_Y_BINS[@]} - 4)) && $isGammaN == 0 )) && isLastEntry=1
+      inputPoint="fullAnalysis/pt${ptmin}-${ptmax}_y${ymin}-${ymax}_IsGammaN${isGammaN}/MassFit/correctedYields.md"
       if (( $ptmin != $prev_ptmin || $ptmax != $prev_ptmax )); then
-        make_plot_config $pt_y_bins_set
-        inputPoints=""
-        prev_ptmin=ptmin
-        prev_ptmax=ptmax
-        outputString="pt${ptmin}-${ptmax}_IsGammaN${isGammaN}"
+        if (( $prev_ptmin != $prev_ptmax )); then
+          make_plot_config $configOutput $outputDir $inputPoints \
+            $prev_ptmin $prev_ptmax $isGammaN
+        fi
+        prev_ptmin=$ptmin
+        prev_ptmax=$ptmax
+        outputBase="pt${ptmin}-${ptmax}_IsGammaN${isGammaN}"
+        configOutput="${PLOT_fullAnalysis}_${outputBase}.json"
+        outputDir="plot/fullAnalysis_$outputBase"
+        inputPoints="$inputPoint"
       else
-        pt_y_bins_set+=( ${PT_Y_BINS[ $i + 0 ]} )
-        pt_y_bins_set+=( ${PT_Y_BINS[ $i + 1 ]} )
-        pt_y_bins_set+=( ${PT_Y_BINS[ $i + 2 ]} )
-        pt_y_bins_set+=( ${PT_Y_BINS[ $i + 3 ]} )
-        inputPoints="$inputPoints,$fileString"
+        inputPoints="$inputPoints,$inputPoint"
       fi
     done
-    
-    echo "plot config step goes here..."
+    make_plot_config $configOutput $outputDir $inputPoints \
+      $prev_ptmin $prev_ptmax $isGammaN
   fi
 done

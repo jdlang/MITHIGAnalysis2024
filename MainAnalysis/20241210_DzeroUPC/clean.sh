@@ -14,7 +14,8 @@ rm *.txt*
 rm SkimReco.root
 rm .DS_Store
 
-cd /home/$USER/CMSSW_13_2_7/src
+#cd /home/$USER/CMSSW_13_2_13/src
+cd /home/$USER/CMSSW_14_1_7/src
 cmsenv
 
 cd -

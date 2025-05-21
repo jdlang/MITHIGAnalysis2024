@@ -2827,6 +2827,11 @@ DzeroUPCTreeMessenger::~DzeroUPCTreeMessenger()
       delete DpassCut23PASSystDtrkPt;
       delete DpassCut23PASSystDalpha;
       delete DpassCut23PASSystDchi2cl;
+      if (DpassCutDefault != nullptr) delete DpassCutDefault;
+      if (DpassCutSystDsvpvSig != nullptr) delete DpassCutSystDsvpvSig;
+      if (DpassCutSystDtrkPt != nullptr) delete DpassCutSystDtrkPt;
+      if (DpassCutSystDalpha != nullptr) delete DpassCutSystDalpha;
+      if (DpassCutSystDchi2cl != nullptr) delete DpassCutSystDchi2cl;
       delete Dy;
       delete Dmass;
       delete Dtrk1Pt;
@@ -2879,6 +2884,11 @@ bool DzeroUPCTreeMessenger::Initialize(bool Debug)
    DpassCut23PASSystDtrkPt = nullptr;
    DpassCut23PASSystDalpha = nullptr;
    DpassCut23PASSystDchi2cl = nullptr;
+   DpassCutDefault = nullptr;
+   DpassCutSystDsvpvSig = nullptr;
+   DpassCutSystDtrkPt = nullptr;
+   DpassCutSystDalpha = nullptr;
+   DpassCutSystDchi2cl = nullptr;
    Dy = nullptr;
    Dmass = nullptr;
    Dtrk1Pt = nullptr;
@@ -2940,20 +2950,20 @@ bool DzeroUPCTreeMessenger::Initialize(bool Debug)
    Tree->SetBranchAddress("Dy", &Dy);
    Tree->SetBranchAddress("Dmass", &Dmass);
    Tree->SetBranchAddress("Dtrk1Pt", &Dtrk1Pt);
-   Tree->SetBranchAddress("Dtrk1Eta", &Dtrk1Eta);
-   Tree->SetBranchAddress("Dtrk1dedx", &Dtrk1dedx);
-   Tree->SetBranchAddress("Dtrk1MassHypo", &Dtrk1MassHypo);
+   if(Tree->GetBranch("Dtrk1Eta")) Tree->SetBranchAddress("Dtrk1Eta", &Dtrk1Eta);
+   if(Tree->GetBranch("Dtrk1dedx")) Tree->SetBranchAddress("Dtrk1dedx", &Dtrk1dedx);
+   if(Tree->GetBranch("Dtrk1MassHypo")) Tree->SetBranchAddress("Dtrk1MassHypo", &Dtrk1MassHypo);
    Tree->SetBranchAddress("Dtrk2Pt", &Dtrk2Pt);
-   Tree->SetBranchAddress("Dtrk2Eta", &Dtrk2Eta);
-   Tree->SetBranchAddress("Dtrk2dedx", &Dtrk2dedx);
-   Tree->SetBranchAddress("Dtrk2MassHypo", &Dtrk2MassHypo);
+   if(Tree->GetBranch("Dtrk2Eta")) Tree->SetBranchAddress("Dtrk2Eta", &Dtrk2Eta);
+   if(Tree->GetBranch("Dtrk2dedx")) Tree->SetBranchAddress("Dtrk2dedx", &Dtrk2dedx);
+   if(Tree->GetBranch("Dtrk2MassHypo")) Tree->SetBranchAddress("Dtrk2MassHypo", &Dtrk2MassHypo);
    Tree->SetBranchAddress("Dchi2cl", &Dchi2cl);
    Tree->SetBranchAddress("DsvpvDistance", &DsvpvDistance);
    Tree->SetBranchAddress("DsvpvDisErr", &DsvpvDisErr);
    Tree->SetBranchAddress("DsvpvDistance_2D", &DsvpvDistance_2D);
    Tree->SetBranchAddress("DsvpvDisErr_2D", &DsvpvDisErr_2D);
-   Tree->SetBranchAddress("Dip3d", &Dip3d);
-   Tree->SetBranchAddress("Dip3derr", &Dip3derr);
+   if(Tree->GetBranch("Dip3d")) Tree->SetBranchAddress("Dip3d", &Dip3d);
+   if(Tree->GetBranch("Dip3derr")) Tree->SetBranchAddress("Dip3derr", &Dip3derr);
    Tree->SetBranchAddress("Dalpha", &Dalpha);
    Tree->SetBranchAddress("Ddtheta", &Ddtheta);
    Tree->SetBranchAddress("DpassCut23PAS", &DpassCut23PAS);
@@ -2962,11 +2972,11 @@ bool DzeroUPCTreeMessenger::Initialize(bool Debug)
    Tree->SetBranchAddress("DpassCut23PASSystDtrkPt", &DpassCut23PASSystDtrkPt);
    Tree->SetBranchAddress("DpassCut23PASSystDalpha", &DpassCut23PASSystDalpha);
    Tree->SetBranchAddress("DpassCut23PASSystDchi2cl", &DpassCut23PASSystDchi2cl);
-   Tree->SetBranchAddress("DpassCutDefault", &DpassCutDefault);
-   Tree->SetBranchAddress("DpassCutSystDsvpvSig", &DpassCutSystDsvpvSig);
-   Tree->SetBranchAddress("DpassCutSystDtrkPt", &DpassCutSystDtrkPt);
-   Tree->SetBranchAddress("DpassCutSystDalpha", &DpassCutSystDalpha);
-   Tree->SetBranchAddress("DpassCutSystDchi2cl", &DpassCutSystDchi2cl);
+   if(Tree->GetBranch("DpassCutDefault")) Tree->SetBranchAddress("DpassCutDefault", &DpassCutDefault);
+   if(Tree->GetBranch("DpassCutSystDsvpvSig")) Tree->SetBranchAddress("DpassCutSystDsvpvSig", &DpassCutSystDsvpvSig);
+   if(Tree->GetBranch("DpassCutSystDtrkPt")) Tree->SetBranchAddress("DpassCutSystDtrkPt", &DpassCutSystDtrkPt);
+   if(Tree->GetBranch("DpassCutSystDalpha")) Tree->SetBranchAddress("DpassCutSystDalpha", &DpassCutSystDalpha);
+   if(Tree->GetBranch("DpassCutSystDchi2cl")) Tree->SetBranchAddress("DpassCutSystDchi2cl", &DpassCutSystDchi2cl);
    Tree->SetBranchAddress("Dgen", &Dgen);
    Tree->SetBranchAddress("DisSignalCalc", &DisSignalCalc);
    Tree->SetBranchAddress("DisSignalCalcPrompt", &DisSignalCalcPrompt);
@@ -3048,7 +3058,7 @@ bool DzeroUPCTreeMessenger::SetBranch(TTree *T)
    GisSignalCalcPrompt = new std::vector<bool>();
    GisSignalCalcFeeddown = new std::vector<bool>();
 
-  Tree = T;
+   Tree = T;
 
    Tree->Branch("Run",                   &Run, "Run/I");
    Tree->Branch("Event",                 &Event, "Event/L");
@@ -3183,11 +3193,11 @@ void DzeroUPCTreeMessenger::Clear()
    DpassCut23PASSystDtrkPt->clear();
    DpassCut23PASSystDalpha->clear();
    DpassCut23PASSystDchi2cl->clear();
-   DpassCutDefault->clear();
-   DpassCutSystDsvpvSig->clear();
-   DpassCutSystDtrkPt->clear();
-   DpassCutSystDalpha->clear();
-   DpassCutSystDchi2cl->clear();
+   if (DpassCutDefault != nullptr) DpassCutDefault->clear();
+   if (DpassCutSystDsvpvSig != nullptr) DpassCutSystDsvpvSig->clear();
+   if (DpassCutSystDtrkPt != nullptr) DpassCutSystDtrkPt->clear();
+   if (DpassCutSystDalpha != nullptr) DpassCutSystDalpha->clear();
+   if (DpassCutSystDchi2cl != nullptr) DpassCutSystDchi2cl->clear();
    Dgen->clear();
    DisSignalCalc->clear();
    DisSignalCalcPrompt->clear();
@@ -3236,7 +3246,7 @@ void DzeroUPCTreeMessenger::CopyNonTrack(DzeroUPCTreeMessenger &M)
    if(Dtrk1Pt != nullptr && M.Dtrk1Pt != nullptr)   *Dtrk1Pt = *(M.Dtrk1Pt);
    if(Dtrk1Eta != nullptr && M.Dtrk1Eta != nullptr)   *Dtrk1Eta = *(M.Dtrk1Eta);
    if(Dtrk1dedx != nullptr && M.Dtrk1dedx != nullptr)   *Dtrk1dedx = *(M.Dtrk1dedx);
-   if(Dtrk1MassHypo != nullptr && M.Dtrk1MassHypo != nullptr)   *Dtrk1MassHypo = *(M.Dtrk1MassHypo);\
+   if(Dtrk1MassHypo != nullptr && M.Dtrk1MassHypo != nullptr)   *Dtrk1MassHypo = *(M.Dtrk1MassHypo);
    if(Dtrk2Pt != nullptr && M.Dtrk2Pt != nullptr)   *Dtrk2Pt = *(M.Dtrk2Pt);
    if(Dtrk2Eta != nullptr && M.Dtrk2Eta != nullptr)   *Dtrk2Eta = *(M.Dtrk2Eta);
    if(Dtrk2dedx != nullptr && M.Dtrk2dedx != nullptr)   *Dtrk2dedx = *(M.Dtrk2dedx);
