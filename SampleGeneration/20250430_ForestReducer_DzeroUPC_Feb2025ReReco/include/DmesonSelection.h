@@ -204,6 +204,43 @@ bool DpassCutSystDchi2cl(DzeroTreeMessenger &MDzero, int iD) {
   return pass;
 }
 
+bool DtrkCut_PtQuality(DzeroTreeMessenger &MDzero, int iD) {
+  vector<vector<float>> DtrkPtQuality = {
+    {0.1, -1,   0,  12,  -4, 4},
+  };
+  float pt = MDzero.Dpt[iD];
+  float y = MDzero.Dy[iD];
+  bool pass = false;
+  if (
+    CheckCut(DtrkPtQuality,
+      MDzero.Dtrk1PtErr[iD] / MDzero.Dtrk1Pt[iD], pt, y) &&
+    CheckCut(DtrkPtQuality,
+      MDzero.Dtrk2PtErr[iD] / MDzero.Dtrk2Pt[iD], pt, y)
+  ) {
+    pass = true;
+  }
+  return pass;
+}
+
+bool DtrkCut_HitQuality(DzeroTreeMessenger &MDzero, int iD) {
+  vector<vector<float>> DtrkHitQuality = {
+    {11,  1,   0,  12,  -4, 4},
+  };
+  float pt = MDzero.Dpt[iD];
+  float y = MDzero.Dy[iD];
+  bool pass = false;
+  if (
+    CheckCut(DtrkHitQuality,
+      (MDzero.Dtrk1PixelHit[iD] + MDzero.Dtrk1StripHit[iD]), pt, y) &&
+    CheckCut(DtrkHitQuality,
+      (MDzero.Dtrk2PixelHit[iD] + MDzero.Dtrk2StripHit[iD]), pt, y)
+  ) {
+    pass = true;
+  }
+  return pass;
+}
+
+
 // ============================================================================
 // DO NOT CHANGE BELOW THIS POINT! --------------------------------------------
 // ============================================================================

@@ -296,6 +296,8 @@ int main(int argc, char *argv[]) {
         bool DpassCutSystDtrkPt_        = DpassCutSystDtrkPt(MDzero, iD);
         bool DpassCutSystDalpha_        = DpassCutSystDalpha(MDzero, iD);
         bool DpassCutSystDchi2cl_       = DpassCutSystDchi2cl(MDzero, iD);
+        bool DtrkCut_PtQuality_         = DtrkCut_PtQuality(MDzero, iD);
+        bool DtrkCut_HitQuality_        = DtrkCut_HitQuality(MDzero, iD);
         if (IsData)
         {
           if (ApplyDRejection=="or")
@@ -351,6 +353,9 @@ int main(int argc, char *argv[]) {
         if (MDzeroUPC.DpassCutSystDtrkPt != nullptr) MDzeroUPC.DpassCutSystDtrkPt->push_back(DpassCutSystDtrkPt_);
         if (MDzeroUPC.DpassCutSystDalpha != nullptr) MDzeroUPC.DpassCutSystDalpha->push_back(DpassCutSystDalpha_);
         if (MDzeroUPC.DpassCutSystDchi2cl != nullptr) MDzeroUPC.DpassCutSystDchi2cl->push_back(DpassCutSystDchi2cl_);
+        if (MDzeroUPC.DpassCutSystDchi2cl != nullptr) MDzeroUPC.DpassCutSystDchi2cl->push_back(DpassCutSystDchi2cl_);
+        if (MDzeroUPC.DtrkCut_PtQuality != nullptr) MDzeroUPC.DtrkCut_PtQuality->push_back(DtrkCut_PtQuality_);
+        if (MDzeroUPC.DtrkCut_HitQuality != nullptr) MDzeroUPC.DtrkCut_HitQuality->push_back(DtrkCut_HitQuality_);
         if (IsData == false) {
           MDzeroUPC.Dgen->push_back(MDzero.Dgen[iD]);
           bool isSignalGenMatched = MDzero.Dgen[iD] == 23333 && MDzero.Dgenpt[iD] > 0.;
