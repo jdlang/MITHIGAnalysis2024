@@ -45,6 +45,8 @@ jq -c '.Plots[]' $PlotSettingCard | while read Plot; do
   echo "Executing >>>>>>"
   echo $cmd
 
-	$cmd >> $PlotDir/plot.log
+  $cmd
+  
+#	$cmd >> $PlotDir/plot.log
 
 done

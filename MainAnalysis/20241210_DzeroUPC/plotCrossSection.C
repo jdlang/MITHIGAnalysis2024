@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
   hFrame->GetXaxis()->SetTitle("D^{0} y");
   hFrame->SetStats(0);
   hFrame->GetYaxis()->SetTitleOffset(1.5);
-  hFrame->GetYaxis()->SetRangeUser(0, 8.0);
+  hFrame->GetYaxis()->SetRangeUser(0, 6.0);
   hFrame->Draw();
 
   TGraphErrors* gr = new TGraphErrors(nPoints, yValues.data(), correctedYieldValues.data(), yErrors.data(), correctedYieldErrors.data());

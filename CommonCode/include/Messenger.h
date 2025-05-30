@@ -822,8 +822,6 @@ public:
    std::vector<bool> *DpassCutSystDtrkPt;
    std::vector<bool> *DpassCutSystDalpha;
    std::vector<bool> *DpassCutSystDchi2cl;
-   std::vector<bool> *DtrkCut_PtQuality;
-   std::vector<bool> *DtrkCut_HitQuality;
    std::vector<int> *Dgen;
    std::vector<bool> *DisSignalCalc;
    std::vector<bool> *DisSignalCalcPrompt;

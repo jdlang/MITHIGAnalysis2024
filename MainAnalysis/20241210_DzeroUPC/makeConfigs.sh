@@ -28,9 +28,6 @@ PT_Y_BINS=(
   2   5    0    1
   2   5    1    2
 )
-MASSFIT_BIN_SETS=(
-  "2,5,-2,-1,0,1,2"
-)
 
 MAKE_MICROTREE_CFGS=1
 MAKE_MASSFIT_CFGS=1
@@ -39,7 +36,10 @@ DO_REWEIGHTING=0
 USE_GAMMAN_FOR_NGAMMA=1
 MERGER_MIRROR_YBINS=1
 
-SKIM_DATA="/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250519_Skim_2023Data_Feb2025ReReco_HIForward0-9.root"
+SKIM_DATA="/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250528_Skim_2023Data_Feb2025ReReco_NEW_HIForward01235679.root"
+#SKIM_DATA="/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250528_Skim_2023Data_Feb2025ReReco_OLD_HIForward01235679.root"
+#SKIM_DATA="/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250508_Skim_2023Data_Jan2024ReReco_HIForward0.root"
+#SKIM_DATA="/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250527_Skim_2023Data_Jan2024ReReco_HIForward0_Unfiltered.root"
 #SKIM_DATA="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsData/20250312_ForestDfinderData23Skim_v4.root"
 SKIM_MC_FORCED_D0_A="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamA/mergedfile.root"
 SKIM_MC_FORCED_D0_B="/data00/UPCD0LowPtAnalysis_2023ZDCORData_2023reco/SkimsMC/20250306_v4_Pthat0_ForceD0DecayD0Filtered_MassWindow040_BeamB/mergedfile.root"

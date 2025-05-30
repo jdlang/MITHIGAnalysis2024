@@ -8,7 +8,7 @@ MAXCORES=${5}
 
 mkdir -p "${OUTPUT}/temp_inputs/"
 FILE="${OUTPUT}/temp_inputs/job_${COUNTER}.root"
-rm $file &> /dev/null
+rm $FILE &> /dev/null
 xrdcp -N --parallel $MAXCORES -t 2 $SERVER$FILEPATH $FILE
 wait
 
@@ -27,5 +27,5 @@ echo "Processing $FILE"
 wait
 
 sleep 0.2
-rm $file
+rm $FILE
 wait

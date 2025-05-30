@@ -10,7 +10,7 @@ rm -rf Output
 rm SkimReco.root
 rm list.txt
 rm -rf output
-rm *.txt*
+#rm *.txt*
 rm SkimReco.root
 rm .DS_Store
 

@@ -296,8 +296,6 @@ int main(int argc, char *argv[]) {
         bool DpassCutSystDtrkPt_        = DpassCutSystDtrkPt(MDzero, iD);
         bool DpassCutSystDalpha_        = DpassCutSystDalpha(MDzero, iD);
         bool DpassCutSystDchi2cl_       = DpassCutSystDchi2cl(MDzero, iD);
-        bool DtrkCut_PtQuality_         = DtrkCut_PtQuality(MDzero, iD);
-        bool DtrkCut_HitQuality_        = DtrkCut_HitQuality(MDzero, iD);
         if (IsData)
         {
           if (ApplyDRejection=="or")
@@ -326,13 +324,19 @@ int main(int argc, char *argv[]) {
         MDzeroUPC.Dy->push_back(MDzero.Dy[iD]);
         MDzeroUPC.Dmass->push_back(MDzero.Dmass[iD]);
         MDzeroUPC.Dtrk1Pt->push_back(MDzero.Dtrk1Pt[iD]);
+        if (MDzeroUPC.Dtrk1PtErr != nullptr) MDzeroUPC.Dtrk1PtErr->push_back(MDzero.Dtrk1PtErr[iD]);
         if (MDzeroUPC.Dtrk1Eta != nullptr) MDzeroUPC.Dtrk1Eta->push_back(MDzero.Dtrk1Eta[iD]);
-        if (MDzeroUPC.Dtrk1dedx != nullptr)MDzeroUPC.Dtrk1dedx->push_back(MDzero.Dtrk1dedx[iD]);
-        if (MDzeroUPC.Dtrk1MassHypo != nullptr)MDzeroUPC.Dtrk1MassHypo->push_back(MDzero.Dtrk1MassHypo[iD]);
+        if (MDzeroUPC.Dtrk1dedx != nullptr) MDzeroUPC.Dtrk1dedx->push_back(MDzero.Dtrk1dedx[iD]);
+        if (MDzeroUPC.Dtrk1MassHypo != nullptr) MDzeroUPC.Dtrk1MassHypo->push_back(MDzero.Dtrk1MassHypo[iD]);
+        if (MDzeroUPC.Dtrk1PixelHit != nullptr) MDzeroUPC.Dtrk1PixelHit->push_back(MDzero.Dtrk1PixelHit[iD]);
+        if (MDzeroUPC.Dtrk1StripHit != nullptr) MDzeroUPC.Dtrk1StripHit->push_back(MDzero.Dtrk1StripHit[iD]);
         MDzeroUPC.Dtrk2Pt->push_back(MDzero.Dtrk2Pt[iD]);
+        if (MDzeroUPC.Dtrk2PtErr != nullptr) MDzeroUPC.Dtrk2PtErr->push_back(MDzero.Dtrk2PtErr[iD]);
         if (MDzeroUPC.Dtrk2Eta != nullptr) MDzeroUPC.Dtrk2Eta->push_back(MDzero.Dtrk2Eta[iD]);
         if (MDzeroUPC.Dtrk2dedx != nullptr) MDzeroUPC.Dtrk2dedx->push_back(MDzero.Dtrk2dedx[iD]);
         if (MDzeroUPC.Dtrk2MassHypo != nullptr) MDzeroUPC.Dtrk2MassHypo->push_back(MDzero.Dtrk2MassHypo[iD]);
+        if (MDzeroUPC.Dtrk2PixelHit != nullptr) MDzeroUPC.Dtrk2PixelHit->push_back(MDzero.Dtrk2PixelHit[iD]);
+        if (MDzeroUPC.Dtrk2StripHit != nullptr) MDzeroUPC.Dtrk2StripHit->push_back(MDzero.Dtrk2StripHit[iD]);
         MDzeroUPC.Dchi2cl->push_back(MDzero.Dchi2cl[iD]);
         MDzeroUPC.DsvpvDistance->push_back(MDzero.DsvpvDistance[iD]);
         MDzeroUPC.DsvpvDisErr->push_back(MDzero.DsvpvDisErr[iD]);
@@ -354,8 +358,6 @@ int main(int argc, char *argv[]) {
         if (MDzeroUPC.DpassCutSystDalpha != nullptr) MDzeroUPC.DpassCutSystDalpha->push_back(DpassCutSystDalpha_);
         if (MDzeroUPC.DpassCutSystDchi2cl != nullptr) MDzeroUPC.DpassCutSystDchi2cl->push_back(DpassCutSystDchi2cl_);
         if (MDzeroUPC.DpassCutSystDchi2cl != nullptr) MDzeroUPC.DpassCutSystDchi2cl->push_back(DpassCutSystDchi2cl_);
-        if (MDzeroUPC.DtrkCut_PtQuality != nullptr) MDzeroUPC.DtrkCut_PtQuality->push_back(DtrkCut_PtQuality_);
-        if (MDzeroUPC.DtrkCut_HitQuality != nullptr) MDzeroUPC.DtrkCut_HitQuality->push_back(DtrkCut_HitQuality_);
         if (IsData == false) {
           MDzeroUPC.Dgen->push_back(MDzero.Dgen[iD]);
           bool isSignalGenMatched = MDzero.Dgen[iD] == 23333 && MDzero.Dgenpt[iD] > 0.;
