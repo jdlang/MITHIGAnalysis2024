@@ -25,6 +25,24 @@ using namespace std;
 #define DMASSMIN 1.66
 #define DMASSMAX 2.26
 #define DMASSNBINS 48
+#define PIMASS 0.1395701
+#define KMASS 0.4936769
+
+Double_t dedxCurve(Double_t *DtrkP, Double_t *par) {
+  Float_t p = TMath::Log(DtrkP[0]);
+  Double_t f = par[0] + TMath::Exp(par[1] + par[2]*p + par[3]*p*p);
+  return f;
+}
+// Kaon uncertainty curves
+TF1* KdedxErrLo = new TF1("KdedxErrLo", dedxCurve, 0.5, 3.);
+KdedxErrLo->SetParameters(1., 2., 3., 4.);
+TF1* KdedxErrHi = new TF1("KdedxErrHi", dedxCurve, 0.5, 3.);
+KdedxErrHi->SetParameters(1., 2., 3., 4.);
+// Proton uncertainty curves
+TF1* pdedxErrLo = new TF1("pdedxErrLo", dedxCurve, 0.5, 3.);
+pdedxErrLo->SetParameters(1., 2., 3., 4.);
+TF1* pdedxErrHi = new TF1("pdedxErrHi", dedxCurve, 0.5, 3.);
+pdedxErrHi->SetParameters(1., 2., 3., 4.);
 
 //============================================================//
 // Function to check for configuration errors
@@ -32,9 +50,88 @@ using namespace std;
 bool checkError(const Parameters &par) { return false; }
 
 //======= trackSelection =====================================//
-// Check if the track pass selection criteria
+// Check if the track passes selection criteria
 //============================================================//
-bool dzeroSelection(DzeroUPCTreeMessenger *b, Parameters par, int j) { return true; }
+bool checkPID(
+  DzeroUPCTreeMessenger *msgr,
+  Parameters par,
+  int j,
+  bool rejectProton = false
+) {
+  float Dtrk1P = msgr->Dtrk1Pt->at(j) / (1 - TMath:TanH(msgr->Dtrk1Eta->at(j)));
+  float Dtrk1dedx = msgr->Dtrk1dedx->at(j);
+  float Dtrk2P = msgr->Dtrk2Pt->at(j) / (1 - TMath:TanH(msgr->Dtrk2Eta->at(j)));
+  float Dtrk2dedx = msgr->Dtrk2dedx->at(j);
+  
+  bool passPID = false;
+  if (msgr->Dtrk1MassHypo->at(j) == KMASS &&
+      Dtrk1dedx > KdedxErrLo(Dtrk1P) && Dtrk1dedx < KdedxErrHi(Dtrk1P)
+      ) passPID = true;
+  else if (msgr->Dtrk2MassHypo->at(j) == KMASS &&
+      Dtrk2dedx > KdedxErrLo(Dtrk2P) && Dtrk2dedx < KdedxErrHi(Dtrk2P)
+      ) passPID = true;
+  // Reject if either track is in the dedx proton band
+  if (rejectProton &&
+      (Dtrk1dedx > pdedxErrLo(Dtrk1P) || Dtrk2dedx > pdedxErrLo(Dtrk2P))
+      ) passPID = false;
+  return passPID;
+}
+
+bool checkTopology(
+  DzeroUPCTreeMessenger *MDzeroUPC,
+  Parameters par,
+  int j,
+  bool useCut23PAS = false
+) {
+  if (useCut23PAS) {
+    if (par.DoSystD==0 && MDzeroUPC->DpassCut23PAS->at(j) == false) continue;
+    if (par.DoSystD==1 && MDzeroUPC->DpassCut23PASSystDsvpvSig->at(j) == false) continue;
+    if (par.DoSystD==2 && MDzeroUPC->DpassCut23PASSystDtrkPt->at(j) == false) continue;
+    if (par.DoSystD==3 && MDzeroUPC->DpassCut23PASSystDalpha->at(j) == false) continue;
+    if (par.DoSystD==4 && MDzeroUPC->DpassCut23PASSystDchi2cl->at(j) == false) continue;
+    }
+  else {
+    if (par.DoSystD==0 && MDzeroUPC->DpassCutDefault->at(j) == false) continue;
+    if (par.DoSystD==1 && MDzeroUPC->DpassCutSystDsvpvSig->at(j) == false) continue;
+    if (par.DoSystD==2 && MDzeroUPC->DpassCutSystDtrkPt->at(j) == false) continue;
+    if (par.DoSystD==3 && MDzeroUPC->DpassCutSystDalpha->at(j) == false) continue;
+    if (par.DoSystD==4 && MDzeroUPC->DpassCutSystDchi2cl->at(j) == false) continue;
+  }
+}
+
+bool dzeroSelection(DzeroUPCTreeMessenger *MDzeroUPC, Parameters par, int j) {
+  bool passKinematic = false;
+  if (MDzeroUPC->Dpt->at(j) > par.MinDzeroPT &&
+      MDzeroUPC->Dpt->at(j) < par.MaxDzeroPT &&
+      MDzeroUPC->Dy->at(j) > par.MinDzeroY &&
+      MDzeroUPC->Dy->at(j) < par.MaxDzeroY
+      ) passKinematic = true;
+  
+  bool passTrackFilter = false;
+  if ((par.DoTrackFilter == 1 || par.DoTrackFilter == 3) &&
+      MDzeroUPC->Dtrk1PtErr->at(j) / MDzeroUPC->Dtrk1Pt->at(j) < 0.1 &&
+      MDzeroUPC->Dtrk2PtErr->at(j) / MDzeroUPC->Dtrk2Pt->at(j) < 0.1
+      ) passTrackFilter = true;
+  if ((par.DoTrackFilter == 2 || par.DoTrackFilter == 3) &&
+      MDzeroUPC->Dtrk1PixelHit->at(j) + MDzeroUPC->Dtrk1StripHit->at(j) >= 11 &&
+      MDzeroUPC->Dtrk2PixelHit->at(j) + MDzeroUPC->Dtrk2StripHit->at(j) >= 11
+      ) passTrackFilter = true;
+  if (par.DoTrackFilter == 0) passTrackFilter = true;
+  
+  bool passDfilter = false;
+  float PIDOnlyMaxDpt = 2.; // Threshold for cutting on only PID [GeV]
+  float PIDOrTopoMaxDpt = 5.; // Threshold for cutting on PID and  [GeV]
+  if (par.DoPID == 1 && MDzeroUPC->Dpt->at(j) < PIDOnlyMaxDpt) {
+    passDfilter = checkPID(MDzeroUPC, par, j);
+  }
+  else if (par.DoPID == 1 && MDzeroUPC->Dpt->at(j) < PIDOrTopoMaxDpt) {
+    passDfilter = checkPID(MDzeroUPC, par, j, true) || checkTopology(MDzeroUPC, par, j);
+  }
+  else {
+    passDfilter = checkTopology(MDzeroUPC, par, j);
+  }
+  return passKinematic * passTrackFilter * passDfilter;
+}
 
 //======= eventSelection =====================================//
 // Check if the event pass eventSelection criteria
@@ -208,44 +305,8 @@ public:
       // Check if the event passes the selection criteria
       if (eventSelection(MDzeroUPC, par)) {
         if (!par.IsData && isSigMCEvt) hNumEvtEff->Fill(1, GptGyWeight*MultWeight);
-        bool doTrkFilter = false;
-        if (MDzeroUPC->Dtrk1PtErr != nullptr &&
-            MDzeroUPC->Dtrk2PtErr != nullptr &&
-            MDzeroUPC->Dtrk1PixelHit != nullptr &&
-            MDzeroUPC->Dtrk1StripHit != nullptr &&
-            MDzeroUPC->Dtrk2PixelHit != nullptr &&
-            MDzeroUPC->Dtrk2StripHit != nullptr) doTrkFilter = true;
         for (unsigned long j = 0; j < MDzeroUPC->Dalpha->size(); j++) {
-          if (MDzeroUPC->Dpt->at(j) < par.MinDzeroPT)
-            continue;
-          if (MDzeroUPC->Dpt->at(j) > par.MaxDzeroPT)
-            continue;
-          if (MDzeroUPC->Dy->at(j) < par.MinDzeroY)
-            continue;
-          if (MDzeroUPC->Dy->at(j) > par.MaxDzeroY)
-            continue;
-          if (par.DoSystD==0 && MDzeroUPC->DpassCut23PAS->at(j) == false) continue;
-          // if (par.DoSystD==0 && MDzeroUPC->DpassCut23LowPt->at(j) == false) continue;
-          if (par.DoSystD==1 && MDzeroUPC->DpassCut23PASSystDsvpvSig->at(j) == false) continue;
-          if (par.DoSystD==2 && MDzeroUPC->DpassCut23PASSystDtrkPt->at(j) == false) continue;
-          if (par.DoSystD==3 && MDzeroUPC->DpassCut23PASSystDalpha->at(j) == false) continue;
-          if (par.DoSystD==4 && MDzeroUPC->DpassCut23PASSystDchi2cl->at(j) == false) continue;
-//          if (par.DoSystD==0 && MDzeroUPC->DpassCutDefault->at(j) == false) continue;
-//          if (par.DoSystD==1 && MDzeroUPC->DpassCutSystDsvpvSig->at(j) == false) continue;
-//          if (par.DoSystD==2 && MDzeroUPC->DpassCutSystDtrkPt->at(j) == false) continue;
-//          if (par.DoSystD==3 && MDzeroUPC->DpassCutSystDalpha->at(j) == false) continue;
-//          if (par.DoSystD==4 && MDzeroUPC->DpassCutSystDchi2cl->at(j) == false) continue;
-          if (doTrkFilter) {
-            if (
-              (MDzeroUPC->Dtrk1PtErr->at(j) / MDzeroUPC->Dtrk1Pt->at(j)) > 0.1 ||
-              (MDzeroUPC->Dtrk2PtErr->at(j) / MDzeroUPC->Dtrk2Pt->at(j)) > 0.1
-            ) continue;
-//            if (
-//              (MDzeroUPC->Dtrk1PixelHit->at(j) + MDzeroUPC->Dtrk1StripHit->at(j)) < 11 ||
-//              (MDzeroUPC->Dtrk2PixelHit->at(j) + MDzeroUPC->Dtrk2StripHit->at(j)) < 11
-//            ) continue;
-          }
-
+          if (!dzeroSelection(MDzeroUPC, par)) continue;
           hDmass->Fill((*MDzeroUPC->Dmass)[j]);
           if (!par.IsData) {
             nt->Fill((*MDzeroUPC->Dmass)[j], (*MDzeroUPC->Dgen)[j]);
