@@ -49,10 +49,10 @@ bool checkPID(
 ) {
   bool passPID = false;
   // Check if either track is kaon-matched
-  if (Dtrk1P < KAONMAXP &&
+  if (MDzeroUPC->Dtrk1P->at(j) < KAONMAXP &&
       TMath::Abs(MDzeroUPC->Dtrk1MassHypo->at(j) - KMASS) < 0.01 &&
       TMath::Abs(MDzeroUPC->Dtrk1KaonScore->at(j)) < 1.) passPID = true;
-  else if (Dtrk2P < KAONMAXP &&
+  else if (MDzeroUPC->Dtrk2P->at(j) < KAONMAXP &&
       TMath::Abs(MDzeroUPC->Dtrk2MassHypo->at(j) - KMASS) < 0.01 &&
       TMath::Abs(MDzeroUPC->Dtrk2KaonScore->at(j)) < 1.) passPID = true;
   // Reject if either track is in or above the dedx proton band
@@ -71,20 +71,22 @@ bool checkTopology(
   int j,
   bool useCut23PAS = false
 ) {
+  bool passTopology = true;
   if (useCut23PAS) {
-    if (par.DoSystD==0 && MDzeroUPC->DpassCut23PAS->at(j) == false) continue;
-    if (par.DoSystD==1 && MDzeroUPC->DpassCut23PASSystDsvpvSig->at(j) == false) continue;
-    if (par.DoSystD==2 && MDzeroUPC->DpassCut23PASSystDtrkPt->at(j) == false) continue;
-    if (par.DoSystD==3 && MDzeroUPC->DpassCut23PASSystDalpha->at(j) == false) continue;
-    if (par.DoSystD==4 && MDzeroUPC->DpassCut23PASSystDchi2cl->at(j) == false) continue;
+    if (par.DoSystD==0 && MDzeroUPC->DpassCut23PAS->at(j) == false) passTopology = false;
+    if (par.DoSystD==1 && MDzeroUPC->DpassCut23PASSystDsvpvSig->at(j) == false) passTopology = false;
+    if (par.DoSystD==2 && MDzeroUPC->DpassCut23PASSystDtrkPt->at(j) == false) passTopology = false;
+    if (par.DoSystD==3 && MDzeroUPC->DpassCut23PASSystDalpha->at(j) == false) passTopology = false;
+    if (par.DoSystD==4 && MDzeroUPC->DpassCut23PASSystDchi2cl->at(j) == false) passTopology = false;
   }
   else {
-    if (par.DoSystD==0 && MDzeroUPC->DpassCutDefault->at(j) == false) continue;
-    if (par.DoSystD==1 && MDzeroUPC->DpassCutSystDsvpvSig->at(j) == false) continue;
-    if (par.DoSystD==2 && MDzeroUPC->DpassCutSystDtrkPt->at(j) == false) continue;
-    if (par.DoSystD==3 && MDzeroUPC->DpassCutSystDalpha->at(j) == false) continue;
-    if (par.DoSystD==4 && MDzeroUPC->DpassCutSystDchi2cl->at(j) == false) continue;
+    if (par.DoSystD==0 && MDzeroUPC->DpassCutDefault->at(j) == false) passTopology = false;
+    if (par.DoSystD==1 && MDzeroUPC->DpassCutSystDsvpvSig->at(j) == false) passTopology = false;
+    if (par.DoSystD==2 && MDzeroUPC->DpassCutSystDtrkPt->at(j) == false) passTopology = false;
+    if (par.DoSystD==3 && MDzeroUPC->DpassCutSystDalpha->at(j) == false) passTopology = false;
+    if (par.DoSystD==4 && MDzeroUPC->DpassCutSystDchi2cl->at(j) == false) passTopology = false;
   }
+  return passTopology;
 }
 
 bool dzeroSelection(DzeroUPCTreeMessenger *MDzeroUPC, Parameters par, int j) {
@@ -106,7 +108,7 @@ bool dzeroSelection(DzeroUPCTreeMessenger *MDzeroUPC, Parameters par, int j) {
   // Check PID and/or track topology
   bool passDfilter = false;
   float PIDOnlyMaxDpt = 2.; // Threshold for cutting on only PID [GeV]
-  float PIDOrTopoMaxDpt = 5.; // Threshold for cutting on PID and  [GeV]
+  float PIDOrTopoMaxDpt = 5.; // Threshold for cutting on PID or topology [GeV]
   if (par.DoPID == 0 || MDzeroUPC->Dpt->at(j) > PIDOrTopoMaxDpt)
     passDfilter = checkTopology(MDzeroUPC, par, j);
   else if (par.DoPID == 1 && MDzeroUPC->Dpt->at(j) < PIDOnlyMaxDpt)
@@ -114,7 +116,7 @@ bool dzeroSelection(DzeroUPCTreeMessenger *MDzeroUPC, Parameters par, int j) {
   else if (par.DoPID == 1 && MDzeroUPC->Dpt->at(j) < PIDOrTopoMaxDpt)
     passDfilter = checkPID(MDzeroUPC, par, j, true) || checkTopology(MDzeroUPC, par, j);
   // Return final result
-  return passKinematic * passTrackFilter * passDfilter;
+  return passDfilter;
 }
 
 //======= eventSelection =====================================//
@@ -290,7 +292,7 @@ public:
       if (!eventSelection(MDzeroUPC, par)) continue;
       if (!par.IsData && isSigMCEvt) hNumEvtEff->Fill(1, GptGyWeight*MultWeight);
       for (unsigned long j = 0; j < MDzeroUPC->Dalpha->size(); j++) {
-        if (!dzeroSelection(MDzeroUPC, par)) continue;
+        if (!dzeroSelection(MDzeroUPC, par, j)) continue;
         hDmass->Fill((*MDzeroUPC->Dmass)[j]);
         if (!par.IsData) {
           nt->Fill((*MDzeroUPC->Dmass)[j], (*MDzeroUPC->Dgen)[j]);
@@ -377,7 +379,11 @@ int main(int argc, char *argv[]) {
   float MaxDzeroY = CL.GetDouble("MaxDzeroY", +2);   // Maximum Dzero rapidity threshold for Dzero selection.
   bool IsGammaN = CL.GetBool("IsGammaN", true);      // GammaN analysis (or NGamma)
   int TriggerChoice = CL.GetInt("TriggerChoice", 2); // 0 = no trigger sel, 1 = isL1ZDCOr, 2 = isL1ZDCXORJet8
-  float scaleFactor = CL.GetDouble("scaleFactor", 1); // Scale factor for the number of events to be processed.
+  float scaleFactor = CL.GetDouble("scaleFactor", 1);// Scale factor for the number of events to be processed.
+  int DoPID = CL.GetInt("DoPID", 1);                 // 0 = no PID selection
+                                                     // 1 = PID only for Dpt<2, PID else topo for 2<Dpt<5
+  int DoTrackFilter = CL.GetInt("DoTrackFilter", 1); // 0 = no track filter, 1 = cut on track ptErr/pt,
+                                                     // 2 = cut on track nHits, 3 = cut on ptErr/pt + nHits
   int DoSystRapGap = CL.GetInt("DoSystRapGap", 0);   // Systematic study: apply the alternative event selections
                                                      // 0 = nominal, 1 = tight, -1: loose
                                                      // 9 < DoSystRapGap: use custom HF energy threshold, the threshold value will be DoSystRapGap/10.
@@ -391,6 +397,7 @@ int main(int argc, char *argv[]) {
 
   bool IsData = CL.GetBool("IsData", 0);              // Data or MC
   Parameters par(MinDzeroPT, MaxDzeroPT, MinDzeroY, MaxDzeroY, IsGammaN, TriggerChoice, IsData, scaleFactor,
+                 DoPID, DoTrackFilter,
                  DoSystRapGap, DoSystD,
                  DoGptGyReweighting, GptGyWeightFileName,
                  DoMultReweighting, MultWeightFileName);

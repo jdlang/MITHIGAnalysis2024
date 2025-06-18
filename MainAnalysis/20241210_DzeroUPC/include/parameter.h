@@ -6,7 +6,8 @@ namespace fs = std::filesystem;
 //============================================================//
 class Parameters {
 public:
-    Parameters( float MinDzeroPT, float MaxDzeroPT, float MinDzeroY, float MaxDzeroY, bool IsGammaN, int TriggerChoice, bool IsData, float scaleFactor = 1.0, int DoPID = 1, int DoTrackFilter = 1,
+    Parameters( float MinDzeroPT, float MaxDzeroPT, float MinDzeroY, float MaxDzeroY, bool IsGammaN, int TriggerChoice, bool IsData, float scaleFactor = 1.0,
+                int DoPID = 1, int DoTrackFilter = 1,
                 int in_DoSystRapGap = 0, int in_DoSystD = 0,
                 bool in_DoGptGyReweighting = false, string in_GptGyWeightFileName = "",
                 bool in_DoMultReweighting = false, string in_MultWeightFileName = "")
