@@ -440,6 +440,7 @@ public:
    float Dtrk1Pt[DZEROCOUNTMAX];
    float Dtrk1PtErr[DZEROCOUNTMAX];
    float Dtrk1Eta[DZEROCOUNTMAX];
+   float Dtrk1P[DZEROCOUNTMAX];
    float Dtrk1dedx[DZEROCOUNTMAX];
    float Dtrk1MassHypo[DZEROCOUNTMAX];
    float Dtrk1PixelHit[DZEROCOUNTMAX];
@@ -448,6 +449,7 @@ public:
    float Dtrk2Pt[DZEROCOUNTMAX];
    float Dtrk2PtErr[DZEROCOUNTMAX];
    float Dtrk2Eta[DZEROCOUNTMAX];
+   float Dtrk2P[DZEROCOUNTMAX];
    float Dtrk2dedx[DZEROCOUNTMAX];
    float Dtrk2MassHypo[DZEROCOUNTMAX];
    float Dtrk2PixelHit[DZEROCOUNTMAX];
