@@ -87,9 +87,13 @@ void PIDScoring() {
   std::cout<<"Starting..."<<std::endl;
   
   // Set this to the ORIGINAL skim file without PID:
-  TString fileSourcePath = "/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250616_Skim_2023Data_Feb2025ReReco_HIForward0-9.root";
+  TString fileSourcePath;
+  //fileSourcePath = "/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250619_Skim_2023Data_Feb2025ReReco_HIForward0-9.root";
+  fileSourcePath = "/data00/jdlang/UPCD0LowPtAnalysis/SkimsMC/20250619_Skim_2023MC_Feb2025ReReco_PhotonBeamB_forcedDecays.root";
   // Set this to the path for the copy of the above file that will include PID:
-  TString filePIDPath = "/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250618_Skim_2023Data_Feb2025ReReco_HIForward0-9_PID.root";
+  TString filePIDPath;
+  //filePIDPath = "/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250619_Skim_2023Data_Feb2025ReReco_HIForward0-9_PID.root";
+  filePIDPath = "/data00/jdlang/UPCD0LowPtAnalysis/SkimsMC/20250619_Skim_2023MC_Feb2025ReReco_PhotonBeamB_forcedDecays_PID.root";
   
   std::cout<<"Getting root files..."<<std::endl;
   system(Form("rm %s; wait", filePIDPath.Data()));
