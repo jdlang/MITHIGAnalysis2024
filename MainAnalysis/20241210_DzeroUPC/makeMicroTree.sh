@@ -22,6 +22,8 @@ jq -c '.MicroTrees[]' $SampleSettingCard | while read MicroTree; do
 	GptGyWeightFileName=$(echo $MicroTree | jq -r '.GptGyWeightFileName')
 	DoMultReweighting=$(echo $MicroTree | jq -r '.DoMultReweighting')
 	MultWeightFileName=$(echo $MicroTree | jq -r '.MultWeightFileName')
+	DoPID=$(echo $MicroTree | jq -r '.DoPID')
+	DoTrackFilter=$(echo $MicroTree | jq -r '.DoTrackFilter')
 	mkdir -p $MicroTreeDir/pt${MinDzeroPT}-${MaxDzeroPT}_y${MinDzeroY}-${MaxDzeroY}_IsGammaN${IsGammaN}/
 	Output=$MicroTreeDir/pt${MinDzeroPT}-${MaxDzeroPT}_y${MinDzeroY}-${MaxDzeroY}_IsGammaN${IsGammaN}/${MicroTreeBaseName}
 
@@ -39,6 +41,8 @@ jq -c '.MicroTrees[]' $SampleSettingCard | while read MicroTree; do
 			[ $GptGyWeightFileName != null ] && cmd="$cmd --GptGyWeightFileName $GptGyWeightFileName"
 			[ $DoMultReweighting != null ] && cmd="$cmd --DoMultReweighting $DoMultReweighting"
 			[ $MultWeightFileName != null ] && cmd="$cmd --MultWeightFileName $MultWeightFileName"
+			[ $DoPID != null ] && cmd="$cmd --DoPID $DoPID"
+			[ $DoTrackFilter != null ] && cmd="$cmd --DoTrackFilter $DoTrackFilter"
 
 	echo "Executing >>>>>>"
 	echo $cmd

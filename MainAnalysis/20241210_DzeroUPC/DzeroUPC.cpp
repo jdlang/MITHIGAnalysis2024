@@ -45,22 +45,26 @@ bool checkPID(
   DzeroUPCTreeMessenger *MDzeroUPC,
   Parameters par,
   int j,
-  bool rejectProton = false
+  float kaonAccept = 1.,
+  float protAccept = 1.,
+  bool rejectProtons = false
 ) {
   bool passPID = false;
   // Check if either track is kaon-matched
   if (MDzeroUPC->Dtrk1P->at(j) < KAONMAXP &&
       TMath::Abs(MDzeroUPC->Dtrk1MassHypo->at(j) - KMASS) < 0.01 &&
-      TMath::Abs(MDzeroUPC->Dtrk1KaonScore->at(j)) < 1.) passPID = true;
+      TMath::Abs(MDzeroUPC->Dtrk1KaonScore->at(j)) < kaonAccept
+      ) passPID = true;
   else if (MDzeroUPC->Dtrk2P->at(j) < KAONMAXP &&
       TMath::Abs(MDzeroUPC->Dtrk2MassHypo->at(j) - KMASS) < 0.01 &&
-      TMath::Abs(MDzeroUPC->Dtrk2KaonScore->at(j)) < 1.) passPID = true;
+      TMath::Abs(MDzeroUPC->Dtrk2KaonScore->at(j)) < kaonAccept
+      ) passPID = true;
   // Reject if either track is in or above the dedx proton band
-  if (rejectProton && (
+  if (rejectProtons && (
       (MDzeroUPC->Dtrk1P->at(j) < PROTMAXP &&
-      MDzeroUPC->Dtrk1ProtScore->at(j) > -1.) ||
+      MDzeroUPC->Dtrk1ProtScore->at(j) > -protAccept) ||
       (MDzeroUPC->Dtrk2P->at(j) < PROTMAXP &&
-      MDzeroUPC->Dtrk2ProtScore->at(j) > -1.)
+      MDzeroUPC->Dtrk2ProtScore->at(j) > -protAccept)
       )) passPID = false;
   return passPID;
 }
@@ -69,23 +73,34 @@ bool checkTopology(
   DzeroUPCTreeMessenger *MDzeroUPC,
   Parameters par,
   int j,
-  bool useCut23PAS = false
+  int DCutVersion = 0
 ) {
   bool passTopology = true;
-  if (useCut23PAS) {
+  if (DCutVersion == 0) {
+    if (par.DoSystD==0 && MDzeroUPC->DpassCutNominal->at(j) == false) passTopology = false;
+    if (par.DoSystD==1 && MDzeroUPC->DpassCutSystDsvpvSig->at(j) == false) passTopology = false;
+    if (par.DoSystD==2 && MDzeroUPC->DpassCutSystDtrkPt->at(j) == false) passTopology = false;
+    if (par.DoSystD==3 && MDzeroUPC->DpassCutSystDalpha->at(j) == false) passTopology = false;
+    if (par.DoSystD==4 && MDzeroUPC->DpassCutSystDchi2cl->at(j) == false) passTopology = false;
+  }
+  else if (DCutVersion == 1) {
     if (par.DoSystD==0 && MDzeroUPC->DpassCut23PAS->at(j) == false) passTopology = false;
     if (par.DoSystD==1 && MDzeroUPC->DpassCut23PASSystDsvpvSig->at(j) == false) passTopology = false;
     if (par.DoSystD==2 && MDzeroUPC->DpassCut23PASSystDtrkPt->at(j) == false) passTopology = false;
     if (par.DoSystD==3 && MDzeroUPC->DpassCut23PASSystDalpha->at(j) == false) passTopology = false;
     if (par.DoSystD==4 && MDzeroUPC->DpassCut23PASSystDchi2cl->at(j) == false) passTopology = false;
   }
-  else {
-    if (par.DoSystD==0 && MDzeroUPC->DpassCutDefault->at(j) == false) passTopology = false;
-    if (par.DoSystD==1 && MDzeroUPC->DpassCutSystDsvpvSig->at(j) == false) passTopology = false;
-    if (par.DoSystD==2 && MDzeroUPC->DpassCutSystDtrkPt->at(j) == false) passTopology = false;
-    if (par.DoSystD==3 && MDzeroUPC->DpassCutSystDalpha->at(j) == false) passTopology = false;
-    if (par.DoSystD==4 && MDzeroUPC->DpassCutSystDchi2cl->at(j) == false) passTopology = false;
+  else if (DCutVersion == 2) {
+    if (par.DoSystD==0 && MDzeroUPC->DpassCutNominal->at(j) == false) passTopology = false;
   }
+  if (par.DoSystD==0 && (
+      MDzeroUPC->Dtrk1Pt->at(j) < 0.3 ||
+      MDzeroUPC->Dtrk2Pt->at(j) < 0.3 ||
+      MDzeroUPC->Dalpha->at(j)  > 0.2 ||
+      MDzeroUPC->Ddtheta->at(j) > 0.3 ||
+      MDzeroUPC->Dchi2cl->at(j) < 0.1 ||
+      MDzeroUPC->DsvpvDistance->at(j) / MDzeroUPC->DsvpvDisErr->at(j) < 2.5
+      )) passTopology = false;
   return passTopology;
 }
 
@@ -96,27 +111,34 @@ bool dzeroSelection(DzeroUPCTreeMessenger *MDzeroUPC, Parameters par, int j) {
       MDzeroUPC->Dy->at(j) < par.MinDzeroY ||
       MDzeroUPC->Dy->at(j) > par.MaxDzeroY
       ) return false;
-  // Check track quality
+  
+  // Check track quality (if enabled)
   if ((par.DoTrackFilter == 1 || par.DoTrackFilter == 3) &&
       (MDzeroUPC->Dtrk1PtErr->at(j) / MDzeroUPC->Dtrk1Pt->at(j) > 0.1 ||
       MDzeroUPC->Dtrk2PtErr->at(j) / MDzeroUPC->Dtrk2Pt->at(j) > 0.1)
-      ) return false;
+      ) return false; // Track pT quality
   if ((par.DoTrackFilter == 2 || par.DoTrackFilter == 3) &&
       (MDzeroUPC->Dtrk1PixelHit->at(j) + MDzeroUPC->Dtrk1StripHit->at(j) < 11 ||
       MDzeroUPC->Dtrk2PixelHit->at(j) + MDzeroUPC->Dtrk2StripHit->at(j) < 11)
-      ) return false;
-  // Check PID and/or track topology
-  bool passDfilter = false;
-  float PIDOnlyMaxDpt = 2.; // Threshold for cutting on only PID [GeV]
-  float PIDOrTopoMaxDpt = 5.; // Threshold for cutting on PID or topology [GeV]
-  if (par.DoPID == 0 || MDzeroUPC->Dpt->at(j) > PIDOrTopoMaxDpt)
-    passDfilter = checkTopology(MDzeroUPC, par, j);
-  else if (par.DoPID == 1 && MDzeroUPC->Dpt->at(j) < PIDOnlyMaxDpt)
-    passDfilter = checkPID(MDzeroUPC, par, j, false);
-  else if (par.DoPID == 1 && MDzeroUPC->Dpt->at(j) < PIDOrTopoMaxDpt)
-    passDfilter = checkPID(MDzeroUPC, par, j, true) || checkTopology(MDzeroUPC, par, j);
-  // Return final result
-  return passDfilter;
+      ) return false; // Track hits
+  
+  // Check track topology
+  if (!checkTopology(MDzeroUPC, par, j, par.DoTrackFilter)) return false;
+  // FIXME: Last arg above is a temp hack to handle older MC samples
+  
+  // Check PID (if enabled)
+  if (par.DoPID == 1) {
+    if (MDzeroUPC->Dpt->at(j) < 2. &&
+        !checkPID(MDzeroUPC, par, j)
+        ) return false; // PID-only range
+    else if (par.DoPID == 1 &&
+        (MDzeroUPC->Dtrk1P->at(j) < KAONMAXP ||
+        MDzeroUPC->Dtrk2P->at(j) < KAONMAXP) &&
+        !checkPID(MDzeroUPC, par, j)
+        ) return false; // PID-if-applicable range
+    else return true;
+  }
+  else return true; // If PID is disabled, accept topology check
 }
 
 //======= eventSelection =====================================//
@@ -382,8 +404,10 @@ int main(int argc, char *argv[]) {
   float scaleFactor = CL.GetDouble("scaleFactor", 1);// Scale factor for the number of events to be processed.
   int DoPID = CL.GetInt("DoPID", 1);                 // 0 = no PID selection
                                                      // 1 = PID only for Dpt<2, PID else topo for 2<Dpt<5
-  int DoTrackFilter = CL.GetInt("DoTrackFilter", 1); // 0 = no track filter, 1 = cut on track ptErr/pt,
-                                                     // 2 = cut on track nHits, 3 = cut on ptErr/pt + nHits
+  int DoTrackFilter = CL.GetInt("DoTrackFilter", 1); // 0 = no track filter,
+                                                     // 1 = cut on track ptErr/pt only,
+                                                     // 2 = cut on track nHits only,
+                                                     // 3 = cut on track ptErr/pt AND nHits
   int DoSystRapGap = CL.GetInt("DoSystRapGap", 0);   // Systematic study: apply the alternative event selections
                                                      // 0 = nominal, 1 = tight, -1: loose
                                                      // 9 < DoSystRapGap: use custom HF energy threshold, the threshold value will be DoSystRapGap/10.
