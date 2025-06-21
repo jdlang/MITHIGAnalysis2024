@@ -950,7 +950,8 @@ public:
    std::vector<bool> *DpassCut23PASSystDtrkPt;
    std::vector<bool> *DpassCut23PASSystDalpha;
    std::vector<bool> *DpassCut23PASSystDchi2cl;
-   std::vector<bool> *DpassCutDefault;
+   std::vector<bool> *DpassCutNominal;
+   std::vector<bool> *DpassCutLoose;
    std::vector<bool> *DpassCutSystDsvpvSig;
    std::vector<bool> *DpassCutSystDtrkPt;
    std::vector<bool> *DpassCutSystDalpha;

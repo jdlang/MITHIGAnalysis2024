@@ -3594,7 +3594,7 @@ void DzeroUPCTreeMessenger::CopyNonTrack(DzeroUPCTreeMessenger &M)
    if(Dmass != nullptr && M.Dmass != nullptr)   *Dmass = *(M.Dmass);
    if(Dtrk1Pt != nullptr && M.Dtrk1Pt != nullptr)   *Dtrk1Pt = *(M.Dtrk1Pt);
    if(Dtrk1PtErr != nullptr && M.Dtrk1PtErr != nullptr)   *Dtrk1PtErr = *(M.Dtrk1PtErr);
-   if(Dtrk1Eta != nullptr && M.Dtrk1Eta != nullptr)   *Dtrk1Eta = *(M.Dtrk1Eta);]
+   if(Dtrk1Eta != nullptr && M.Dtrk1Eta != nullptr)   *Dtrk1Eta = *(M.Dtrk1Eta);
    if(Dtrk1P != nullptr && M.Dtrk1P != nullptr)   *Dtrk1P = *(M.Dtrk1P);
    if(Dtrk1dedx != nullptr && M.Dtrk1dedx != nullptr)   *Dtrk1dedx = *(M.Dtrk1dedx);
    if(Dtrk1MassHypo != nullptr && M.Dtrk1MassHypo != nullptr)   *Dtrk1MassHypo = *(M.Dtrk1MassHypo);
