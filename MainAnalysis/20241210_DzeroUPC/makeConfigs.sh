@@ -1,28 +1,7 @@
 #!/bin/bash
 
-#PT_Y_BINS=(
-#  #ptmin #ptmax #ymin #ymax
-#  0   1   -1    0
-#  0   1    0    1
-#  1   2   -1    0
-#  1   2    0    1
-#  2   3   -1    0
-#  2   3    0    1
-#  3   4   -1    0
-#  3   4    0    1
-#  4   5   -1    0
-#  4   5    0    1
-#  0   2   -2.4 -2
-#  0   2   -2   -1
-#  0   2    1    2
-#  0   2    2    2.4
-#  2   5   -2.4 -2
-#  2   5   -2   -1
-#  2   5    1    2
-#  2   5    2    2.4
-#)
-
 PT_Y_BINS=(
+#ptmin #ptmax #ymin #ymax
   0   1   -2   -1
   0   1   -1    0
   0   1    0    1
@@ -31,23 +10,25 @@ PT_Y_BINS=(
   1   2   -1    0
   1   2    0    1
   1   2    1    2
-#  2   5   -2   -1
-#  2   5   -1    0
-#  2   5    0    1
-#  2   5    1    2
+  2   5   -2   -1
+  2   5   -1    0
+  2   5    0    1
+  2   5    1    2
 )
 
 MAKE_MICROTREE_CFGS=1
 MAKE_MASSFIT_CFGS=1
 MAKE_PLOT_CFGS=1
 DO_PID=1
+DO_TRACKFILTER=1
 DO_REWEIGHTING=0
 USE_GAMMAN_FOR_NGAMMA=1
 MERGER_MIRROR_YBINS=1
 
-LUMI_FRACTION=0.5
+LUMI_FRACTION=0.1
 
-SKIM_DATA="/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250619_Skim_2023Data_Feb2025ReReco_HIForward0-9_PID.root"
+#SKIM_DATA="/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250623_Skim_2023Data_Feb2025ReReco_HIForward10_HFFix.root"
+SKIM_DATA="/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250623_Skim_2023Data_Feb2025ReReco_HIForward10-11.root"
 
 SKIM_MC_FORCED_D0_A="/data00/jdlang/UPCD0LowPtAnalysis/SkimsMC/20250619_Skim_2023MC_Feb2025ReReco_PhotonBeamA_forcedDecays_PID.root"
 SKIM_MC_FORCED_D0_B="/data00/jdlang/UPCD0LowPtAnalysis/SkimsMC/20250619_Skim_2023MC_Feb2025ReReco_PhotonBeamB_forcedDecays_PID.root"
@@ -110,7 +91,7 @@ make_microtree_config() {
   local doSystRapGap=${9}
   local doReweighting=${10}
   local doPID=${11}
-  local doTrackFilter=1
+  local doTrackFilter=${12}
   echo "Making MicroTree Config: $(basename $configOutput)"
   # Make header
   if [[ ! -e "$configOutput" ]]; then
@@ -153,8 +134,7 @@ cat >> $configOutput <<EOF
       "DoSystD": $doSystD,
       "DoSystRapGap": $doSystRapGap,
       "DoTrackFilter": $doTrackFilter,
-      "DoPID": $doPID
-      "": $comma
+      "DoPID": $doPID$comma
 EOF
     # Add reweighting (if needed)
     if [[ $doReweighting -eq 1 && "$microtreeRoot" == "MC.root" ]]; then
@@ -321,19 +301,21 @@ for (( isGammaN=1 ; isGammaN >= 0 ; isGammaN-- )); do
     echo "isGammaN: $isGammaN, $ptmin < Dpt < $ptmax, $ymin < Dy < $ymax"
     if [[ "$MAKE_MICROTREE_CFGS" -eq "1" ]]; then
       make_microtree_config $MICROTREE_fullAnalysis $ptmin $ptmax $ymin $ymax\
-        $isGammaN $isLastEntry 0 0 $DO_REWEIGHTING $DO_PID
+        $isGammaN $isLastEntry 0 0 $DO_REWEIGHTING $DO_PID $DO_TRACKFILTER
       make_microtree_config $MICROTREE_systDalpha $ptmin $ptmax $ymin $ymax\
-        $isGammaN $isLastEntry 3 0 $DO_REWEIGHTING $DO_PID
+        $isGammaN $isLastEntry 3 0 $DO_REWEIGHTING $DO_PID $DO_TRACKFILTER
       make_microtree_config $MICROTREE_systDchi2cl $ptmin $ptmax $ymin $ymax\
-        $isGammaN $isLastEntry 4 0 $DO_REWEIGHTING $DO_PID
+        $isGammaN $isLastEntry 4 0 $DO_REWEIGHTING $DO_PID $DO_TRACKFILTER
       make_microtree_config $MICROTREE_systDsvpv $ptmin $ptmax $ymin $ymax\
-        $isGammaN $isLastEntry 1 0 $DO_REWEIGHTING $DO_PID
+        $isGammaN $isLastEntry 1 0 $DO_REWEIGHTING $DO_PID $DO_TRACKFILTER
       make_microtree_config $MICROTREE_systDtrkPt $ptmin $ptmax $ymin $ymax\
-        $isGammaN $isLastEntry 2 0 $DO_REWEIGHTING $DO_PID
+        $isGammaN $isLastEntry 2 0 $DO_REWEIGHTING $DO_PID $DO_TRACKFILTER
       make_microtree_config $MICROTREE_systRapGapLoose $ptmin $ptmax\
-        $ymin $ymax $isGammaN $isLastEntry 0 -1 $DO_REWEIGHTING $DO_PID
+        $ymin $ymax $isGammaN $isLastEntry 0 -1\
+        $DO_REWEIGHTING $DO_PID $DO_TRACKFILTER
       make_microtree_config $MICROTREE_systRapGapTight $ptmin $ptmax\
-        $ymin $ymax $isGammaN $isLastEntry 0 1 $DO_REWEIGHTING $DO_PID
+        $ymin $ymax $isGammaN $isLastEntry 0 1\
+        $DO_REWEIGHTING $DO_PID $DO_TRACKFILTER
     fi
     if [[ "$MAKE_MASSFIT_CFGS" -eq "1" ]]; then
       make_massfit_config $MASSFIT_fullAnalysis "fullAnalysis" "MassFit"\

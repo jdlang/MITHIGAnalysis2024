@@ -1,5 +1,15 @@
 #!/bin/bash
 
+MAXCORES=40
+
+# Process for limiting parallel processes
+wait_for_slot() {
+    while (( $(jobs -r | wc -l) >= MAXCORES )); do
+        # Wait a bit before checking again
+        sleep 1
+    done
+}
+
 SampleSettingCard=${1}
 MicroTreeDir=$(jq -r '.MicroTreeDir' $SampleSettingCard)
 mkdir -p $MicroTreeDir
@@ -52,6 +62,7 @@ jq -c '.MicroTrees[]' $SampleSettingCard | while read MicroTree; do
 	echo $cmd > $MicroTreeDir/pt${MinDzeroPT}-${MaxDzeroPT}_y${MinDzeroY}-${MaxDzeroY}_IsGammaN${IsGammaN}/${MicroTreeLogName}
 	( $cmd >> $MicroTreeDir/pt${MinDzeroPT}-${MaxDzeroPT}_y${MinDzeroY}-${MaxDzeroY}_IsGammaN${IsGammaN}/${MicroTreeLogName} ) &
 	sleep 0.1
+  wait_for_slot
 done
 
 sleep 1
