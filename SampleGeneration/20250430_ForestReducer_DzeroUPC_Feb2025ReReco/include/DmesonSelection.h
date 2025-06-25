@@ -4,7 +4,6 @@ using namespace std;
 // ============================================================================
 // CUT FUNCTIONS --------------------------------------------------------------
 
-// General function to check any cut against a provided Dpt and Dy value
 bool CheckCut(
   vector<vector<float>> DcutValue,
   float Dvalue,
@@ -31,24 +30,6 @@ bool CheckCut(
   return pass;
 }
 
-// Flexible version of cut selection, accepts vector of cut selection matrixes
-// that will be iterated through.
-// New cut settings should use this!
-bool DCutSelection(
-  DzeroTreeMessenger &MDzero,
-  int iD,
-  vector<vector<vector<float>>> DCutValues
-) {
-  float pt = MDzero.Dpt[iD];
-  float y = MDzero.Dy[iD];
-  bool pass = true;
-  for (int i = 0; i < DCutValues.size(); i++) {
-    pass = pass * CheckCut(DCutValues[i], MDzero.Dchi2cl[iD], pt, y);
-  }
-  return pass;
-}
-
-// Old version of cut selection with explicit parameters.
 bool DCutSelection(
   DzeroTreeMessenger &MDzero,
   int iD,
@@ -102,7 +83,9 @@ vector<vector<float>> Dchi2clCutValue_loose = {
 };
 
 vector<vector<float>> DalphaCutValue_nom = {
-  {0.4,  -1,  0,  2,  -2.4, 2.4},
+  {0.2,  -1,  0,  2,  -2.4,  -1},
+  {0.4,  -1,  0,  2,    -1,   1},
+  {0.2,  -1,  0,  2,     1, 2.4},
   {0.2,  -1,  2,  5,  -2.4,  -1},
   {0.4,  -1,  2,  5,    -1,   1},
   {0.2,  -1,  2,  5,     1, 2.4},
@@ -114,7 +97,9 @@ vector<vector<float>> DalphaCutValue_nom = {
   {0.25, -1,  8, 12,     1, 2.4}
 };
 vector<vector<float>> DalphaCutValue_syst = {
-  {0.6,  -1,  0,  2,  -2.4, 2.4},
+  {0.3,  -1,  0,  2,  -2.4,  -1},
+  {0.6,  -1,  0,  2,    -1,   1},
+  {0.3,  -1,  0,  2,     1, 2.4},
   {0.3,  -1,  2,  5,  -2.4,  -1},
   {0.6,  -1,  2,  5,    -1,   1},
   {0.3,  -1,  2,  5,     1, 2.4},
@@ -126,19 +111,23 @@ vector<vector<float>> DalphaCutValue_syst = {
   {0.45, -1,  8, 12,     1, 2.4}
 };
 vector<vector<float>> DalphaCutValue_loose = {
-  {1.0,  -1,  0,  2,  -3,  3},
+  {0.8,  -1,  0,  2,  -3,  3},
   {0.8,  -1,  2, 12,  -3,  3}
 };
 
 vector<vector<float>> DdthetaCutValue_nom = {
-  {0.5,  -1,  0,  2,  -2.4, 2.4},
+  {0.3,  -1,  0,  2,  -2.4,  -1},
+  {0.5,  -1,  0,  2,    -1,   1},
+  {0.3,  -1,  0,  2,     1, 2.4},
   {0.3,  -1,  2,  5,  -2.4,  -1},
   {0.5,  -1,  2,  5,    -1,   1},
   {0.3,  -1,  2,  5,     1, 2.4},
   {0.3,  -1,  5, 12,  -2.4, 2.4}
 };
 vector<vector<float>> DdthetaCutValue_syst = {
-  {0.6,  -1,  0,  2,  -2.4, 2.4},
+  {0.3,  -1,  0,  2,  -2.4,  -1},
+  {0.6,  -1,  0,  2,    -1,   1},
+  {0.3,  -1,  0,  2,     1, 2.4},
   {0.3,  -1,  2,  5,  -2.4,  -1},
   {0.6,  -1,  2,  5,    -1,   1},
   {0.3,  -1,  2,  5,     1, 2.4},
@@ -150,7 +139,7 @@ vector<vector<float>> DdthetaCutValue_syst = {
   {0.45, -1,  8, 12,     1, 2.4}
 };
 vector<vector<float>> DdthetaCutValue_loose = {
-  {1.0,  -1,  0,  2,  -3,  3},
+  {0.8,  -1,  0,  2,  -3,  3},
   {0.8,  -1,  2, 12,  -3,  3}
 };
 
@@ -165,20 +154,21 @@ vector<vector<float>> DsvpvSigCutValue_syst = {
   {2.5, 1,  5, 12, -2.4, 2.4}
 };
 vector<vector<float>> DsvpvSigCutValue_loose = {
-  {1.5, 1,  0,  5, -3, 3},
+  {1.5, 1,  0,  2, -3, 3},
+  {1.5, 1,  2,  5, -3, 3},
   {2.0, 1,  5, 12, -3, 3},
 };
 
 vector<vector<float>> Dtrk1PtCutValue_nom = {
-  {0.8, 1,  0,  2, -2.4, 2.4},
+  {1.0, 1,  0,  2, -2.4, 2.4},
   {1.0, 1,  2, 12, -2.4, 2.4}
 };
 vector<vector<float>> Dtrk1PtCutValue_syst = {
-  {0.5, 1,  0,  2, -2.4, 2.4},
+  {0.7, 1,  0,  2, -2.4, 2.4},
   {0.7, 1,  2, 12, -2.4, 2.4}
 };
 vector<vector<float>> Dtrk1PtCutValue_loose = {
-  {0.3, 1,  0,  2, -3, 3},
+  {0.5, 1,  0,  2, -3, 3},
   {0.5, 1,  2, 12, -3, 3}
 };
 vector<vector<float>> Dtrk2PtCutValue_nom = Dtrk1PtCutValue_nom;
@@ -186,73 +176,301 @@ vector<vector<float>> Dtrk2PtCutValue_syst = Dtrk1PtCutValue_syst;
 vector<vector<float>> Dtrk2PtCutValue_loose = Dtrk1PtCutValue_loose;
 
 bool DpassCutNominal(DzeroTreeMessenger &MDzero, int iD) {
-  vector<vector<vector<float>>> DCutNominal = {
+  return DCutSelection(
+    MDzero,
+    iD,
     Dchi2clCutValue_nom,
     DalphaCutValue_nom,
     DdthetaCutValue_nom,
     DsvpvSigCutValue_nom,
     Dtrk1PtCutValue_nom,
     Dtrk2PtCutValue_nom
-  };
-  return DCutSelection(MDzero, iD, DCutNominal);;
+  );
 }
 
 bool DpassCutLoose(DzeroTreeMessenger &MDzero, int iD) {
-  vector<vector<vector<float>>> DCutLoose = {
+
+  return DCutSelection(
+    MDzero,
+    iD,
     Dchi2clCutValue_loose,
     DalphaCutValue_loose,
     DdthetaCutValue_loose,
     DsvpvSigCutValue_loose,
     Dtrk1PtCutValue_loose,
     Dtrk2PtCutValue_loose
-  };
-  return DCutSelection(MDzero, iD, DCutLoose);
+  );
 }
 
 bool DpassCutSystDsvpvSig(DzeroTreeMessenger &MDzero, int iD) {
-  vector<vector<vector<float>>> DCutSystDsvpvSig = {
+  return DCutSelection(
+    MDzero,
+    iD,
     Dchi2clCutValue_nom,
     DalphaCutValue_nom,
     DdthetaCutValue_nom,
     DsvpvSigCutValue_syst,
     Dtrk1PtCutValue_nom,
     Dtrk2PtCutValue_nom
-  };
-  return pass = DCutSelection(MDzero, iD, DCutSystDsvpvSig);
+  );
 }
 
 bool DpassCutSystDtrkPt(DzeroTreeMessenger &MDzero, int iD) {
-  vector<vector<vector<float>>> DCutSystDtrkPt = {
+  return DCutSelection(
+    MDzero,
+    iD,
     Dchi2clCutValue_nom,
     DalphaCutValue_nom,
     DdthetaCutValue_nom,
     DsvpvSigCutValue_nom,
     Dtrk1PtCutValue_syst,
     Dtrk2PtCutValue_syst
-  };
-  return DCutSelection(MDzero, iD, DCutSystDtrkPt);
+  );
 }
 
 bool DpassCutSystDalpha(DzeroTreeMessenger &MDzero, int iD) {
-  vector<vector<vector<float>>> DCutSystDalpha = {
+  return DCutSelection(
+    MDzero,
+    iD,
     Dchi2clCutValue_nom,
     DalphaCutValue_syst,
     DdthetaCutValue_syst,
     DsvpvSigCutValue_nom,
     Dtrk1PtCutValue_nom,
     Dtrk2PtCutValue_nom
-  };
-  return DCutSelection(MDzero, iD, DCutSystDalpha);
+  );
 }
 
 bool DpassCutSystDchi2cl(DzeroTreeMessenger &MDzero, int iD) {
-  vector<vector<vector<float>>> DCutSystDchi2cl = {
+  return DCutSelection(
+    MDzero,
+    iD,
     Dchi2clCutValue_syst,
     DalphaCutValue_nom,
     DdthetaCutValue_nom,
     DsvpvSigCutValue_nom,
     Dtrk1PtCutValue_nom,
     Dtrk2PtCutValue_nom
+  );
+}
+
+
+// ============================================================================
+// DO NOT EDIT BELOW THIS LINE! -----------------------------------------------
+// HIN-25-002 2025-04 PAS SETTINGS --------------------------------------------
+// ============================================================================
+
+
+// Selection settings used for HIN-25-002:
+// April 2024 PAS for Quark Matter 2025
+vector<vector<float>> Dchi2clCutValue_PAS = {
+  {0.1, 1,   2, 12,  -2, 2}
+};
+vector<vector<float>> DalphaCutValue_PAS = {
+  {0.2,  -1,  2,  5,  -2, -1},
+  {0.4,  -1,  2,  5,  -1,  1},
+  {0.2,  -1,  2,  5,   1,  2},
+  {0.25, -1,  5,  8,  -2, -1},
+  {0.35, -1,  5,  8,  -1,  1},
+  {0.25, -1,  5,  8,   1,  2},
+  {0.25, -1,  8, 12,  -2, -1},
+  {0.4,  -1,  8, 12,  -1,  1},
+  {0.25, -1,  8, 12,   1,  2}
+};
+vector<vector<float>> DdthetaCutValue_PAS = {
+  {0.3, -1,  2,  5, -2, -1},
+  {0.5, -1,  2,  5, -1,  1},
+  {0.3, -1,  2,  5,  1,  2},
+  {0.3, -1,  5, 12, -2,  2}
+};
+vector<vector<float>> DsvpvSigCutValue_PAS = {
+  {2.5, 1,  2,  5, -2, 2},
+  {3.5, 1,  5, 12, -2, 2}
+};
+vector<vector<float>> Dtrk1PtCutValue_PAS = {
+  {1.0, 1,  2, 12, -2, 2}
+};
+vector<vector<float>> Dtrk2PtCutValue_PAS = {
+  {1.0, 1,  2, 12, -2, 2}
+};
+  
+bool DpassCut23PAS(DzeroTreeMessenger &MDzero, int iD) {
+  bool pass = DCutSelection(
+    MDzero,
+    iD,
+    Dchi2clCutValue_PAS,
+    DalphaCutValue_PAS,
+    DdthetaCutValue_PAS,
+    DsvpvSigCutValue_PAS,
+    Dtrk1PtCutValue_PAS,
+    Dtrk2PtCutValue_PAS
+  );
+  return pass;
+}
+
+bool DpassCut23PASSystDsvpvSig(DzeroTreeMessenger &MDzero, int iD) {
+  vector<vector<float>> DsvpvSigCutValue_syst = {
+    {2.0, 1,  2,  5, -2, 2},
+    {2.5, 1,  5, 12, -2, 2}
   };
-  return DCutSelection(MDzero, iD, DCutSystDchi2cl);
+  bool pass = DCutSelection(
+    MDzero,
+    iD,
+    Dchi2clCutValue_PAS,
+    DalphaCutValue_PAS,
+    DdthetaCutValue_PAS,
+    DsvpvSigCutValue_syst,
+    Dtrk1PtCutValue_PAS,
+    Dtrk2PtCutValue_PAS
+  );
+  return pass;
+}
+
+bool DpassCut23PASSystDtrkPt(DzeroTreeMessenger &MDzero, int iD) {
+  vector<vector<float>> Dtrk1PtCutValue_syst = {
+    {0.7, 1,  2, 12, -2, 2}
+  };
+  vector<vector<float>> Dtrk2PtCutValue_syst = {
+    {0.7, 1,  2, 12, -2, 2}
+  };
+  bool pass = DCutSelection(
+    MDzero,
+    iD,
+    Dchi2clCutValue_PAS,
+    DalphaCutValue_PAS,
+    DdthetaCutValue_PAS,
+    DsvpvSigCutValue_PAS,
+    Dtrk1PtCutValue_syst,
+    Dtrk2PtCutValue_syst
+  );
+  return pass;
+}
+
+bool DpassCut23PASSystDalpha(DzeroTreeMessenger &MDzero, int iD) {
+  vector<vector<float>> DalphaCutValue_syst = {
+    {0.3,  -1,  2,  5,  -2, -1},
+    {0.6,  -1,  2,  5,  -1,  1},
+    {0.3,  -1,  2,  5,   1,  2},
+    {0.45, -1,  5,  8,  -2, -1},
+    {0.55, -1,  5,  8,  -1,  1},
+    {0.45, -1,  5,  8,   1,  2},
+    {0.45, -1,  8, 12,  -2, -1},
+    {0.6,  -1,  8, 12,  -1,  1},
+    {0.45, -1,  8, 12,   1,  2}
+  };
+  vector<vector<float>> DdthetaCutValue_syst = {
+    {0.3,  -1,  2,  5,  -2, -1},
+    {0.6,  -1,  2,  5,  -1,  1},
+    {0.3,  -1,  2,  5,   1,  2},
+    {0.45, -1,  5,  8,  -2, -1},
+    {0.55, -1,  5,  8,  -1,  1},
+    {0.45, -1,  5,  8,   1,  2},
+    {0.45, -1,  8, 12,  -2, -1},
+    {0.6,  -1,  8, 12,  -1,  1},
+    {0.45, -1,  8, 12,   1,  2}
+  };
+  bool pass = DCutSelection(
+    MDzero,
+    iD,
+    Dchi2clCutValue_PAS,
+    DalphaCutValue_syst,
+    DdthetaCutValue_syst,
+    DsvpvSigCutValue_PAS,
+    Dtrk1PtCutValue_PAS,
+    Dtrk2PtCutValue_PAS
+  );
+  return pass;
+}
+
+bool DpassCut23PASSystDchi2cl(DzeroTreeMessenger &MDzero, int iD) {
+  vector<vector<float>> Dchi2clCutValue_syst = {
+    {0.05, 1,   2, 12,  -2, 2}
+  };
+  bool pass = DCutSelection(
+    MDzero,
+    iD,
+    Dchi2clCutValue_syst,
+    DalphaCutValue_PAS,
+    DdthetaCutValue_PAS,
+    DsvpvSigCutValue_PAS,
+    Dtrk1PtCutValue_PAS,
+    Dtrk2PtCutValue_PAS
+  );
+  return pass;
+}
+
+bool DpassCut23LowPt(DzeroTreeMessenger &MDzero, int iD) {
+  vector<vector<float>> Dchi2clCutValue_LowPt23 = {
+    {0.1, 1,  1, 12,  -2,  2}
+  };
+  vector<vector<float>> DalphaCutValue_LowPt23 = {
+    {0.3,  -1,  1,  2,  -2,  2},
+    {0.2,  -1,  2,  5,  -2, -1},
+    {0.4,  -1,  2,  5,  -1,  1},
+    {0.2,  -1,  2,  5,   1,  2},
+    {0.25, -1,  5,  8,  -2, -1},
+    {0.35, -1,  5,  8,  -1,  1},
+    {0.25, -1,  5,  8,   1,  2},
+    {0.25, -1,  8, 12,  -2, -1},
+    {0.4,  -1,  8, 12,  -1,  1},
+    {0.25, -1,  8, 12,   1,  2}
+  };
+  vector<vector<float>> DdthetaCutValue_LowPt23 = {
+    {0.3, -1,  1,  2, -2,  2},
+    {0.3, -1,  2,  5, -2, -1},
+    {0.5, -1,  2,  5, -1,  1},
+    {0.3, -1,  2,  5,  1,  2},
+    {0.3, -1,  5, 12, -2,  2}
+  };
+  vector<vector<float>> DsvpvSigCutValue_LowPt23 = {
+    {1.5, 1,  1,  2, -2, 2},
+    {2.5, 1,  2,  5, -2, 2},
+    {3.5, 1,  5, 12, -2, 2}
+  };
+  vector<vector<float>> Dtrk1PtCutValue_LowPt23 = {
+    {0.6, 1,  1,  2, -2, 2},
+    {0.5, 1,  2,  5, -2, 2},
+    {1.0, 1,  5, 12, -2, 2}
+  };
+  vector<vector<float>> Dtrk2PtCutValue_LowPt23 = {
+    {0.6, 1,  1,  2, -2, 2},
+    {0.5, 1,  2,  5, -2, 2},
+    {1.0, 1,  5, 12, -2, 2}
+  };
+  bool pass = DCutSelection(
+    MDzero,
+    iD,
+    Dchi2clCutValue_LowPt23,
+    DalphaCutValue_LowPt23,
+    DdthetaCutValue_LowPt23,
+    DsvpvSigCutValue_LowPt23,
+    Dtrk1PtCutValue_LowPt23,
+    Dtrk2PtCutValue_LowPt23
+  );
+  return pass;
+}
+
+bool DmesonSelectionSkimLowPt23(DzeroTreeMessenger &MDzero, int iD) {
+  /*
+  float Dtrk1PtCutMin = 0.5;
+  float Dtrk2PtCutMin = 0.5;
+  float DptCutMin = 1.;
+  float DyCutAbsMax = 2.;
+  float DalphaCutMax = 0.5;
+  float DdthetaCutMax = 0.5;
+  float DsvpvSigCutMin = 1.5;
+  float Dchi2clCutMin = 0.1;
+
+  bool pass = (
+    MDzero.Dtrk1Pt[iD] >= Dtrk1PtCutMin &&
+    MDzero.Dtrk2Pt[iD] >= Dtrk2PtCutMin &&
+    MDzero.Dpt[iD] >= DptCutMin &&
+    fabs(MDzero.Dy[iD]) <= DyCutAbsMax &&
+    MDzero.Dalpha[iD] <= DalphaCutMax &&
+    MDzero.Ddtheta[iD] <= DdthetaCutMax &&
+    MDzero.DsvpvDistance[iD] / MDzero.DsvpvDisErr[iD] >= DsvpvSigCutMin &&
+    MDzero.Dchi2cl[iD] >= Dchi2clCutMin
+  );
+  */
+  return true;
 }

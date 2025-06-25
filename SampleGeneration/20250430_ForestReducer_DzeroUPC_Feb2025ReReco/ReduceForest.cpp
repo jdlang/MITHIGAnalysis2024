@@ -26,7 +26,6 @@ using namespace std;
 #include "trackingEfficiency2023PbPb.h"
 
 #include "include/DmesonSelection.h"
-#include "include/DmesonSelection_PAS23.h"
 #include "include/PIDScoring.h"
 
 bool logical_or_vectBool(std::vector<bool>* vec) {
@@ -67,7 +66,7 @@ int main(int argc, char *argv[]) {
   // options for how to reject non-selected D candidates (case-insensitive)
   // "NO":              keep all D's
   // "OR":              keep D's that pass the OR logic of all D selections
-  // "Nominal":         reject !DpassCutDefault
+  // "Nominal":         reject !DpassCutNominal
   // "Loose":           reject !DpassCutLoose
   // "SystDsvpvSig":    reject !DpassCutSystDsvpvSig
   // "SystDtrkPt":      reject !DpassCutSystDtrkPt
@@ -76,7 +75,7 @@ int main(int argc, char *argv[]) {
   // "PASOR":           keep D's that pass the OR logic of all PAS selections
   //                    (this is a tighter selection than "OR")
   // "PAS":             reject !DpassCut23PAS
-  // "LowPt":           reject !DpassCut23LowPt
+  // "PASLowPt":        reject !DpassCut23LowPt
   // "PASSystDsvpvSig": reject !DpassCut23PASSystDsvpvSig
   // "PASSystDtrkPt":   reject !DpassCut23PASSystDtrkPt
   // "PASSystDalpha":   reject !DpassCut23PASSystDalpha
@@ -344,7 +343,7 @@ int main(int argc, char *argv[]) {
                 !DpassCut23PASSystDchi2cl_ ) continue;
           }
           else if (ApplyDRejection=="pas" && !DpassCut23PAS_) continue;
-          else if (ApplyDRejection=="lowpt" && !DpassCut23LowPt_) continue;
+          else if (ApplyDRejection=="paslowpt" && !DpassCut23LowPt_) continue;
           else if (ApplyDRejection=="passystdsvpvsig" && !DpassCut23PASSystDsvpvSig_) continue;
           else if (ApplyDRejection=="passystdtrkpt" && !DpassCut23PASSystDtrkPt_) continue;
           else if (ApplyDRejection=="passystdalpha" && !DpassCut23PASSystDalpha_) continue;
@@ -359,7 +358,7 @@ int main(int argc, char *argv[]) {
         MDzeroUPC.Dtrk1Eta->push_back(MDzero.Dtrk1Eta[iD]);
         MDzeroUPC.Dtrk1dedx->push_back(MDzero.Dtrk1dedx[iD]);
         MDzeroUPC.Dtrk1P->push_back(MDzero.Dtrk1P[iD]);
-        if (DoPID && MDzero.Dtrk1P[iD] < 2.) // Only do PID for p_track < 2 GeV
+        if (DoPID && MDzero.Dtrk1P[iD] < 2.) // Only give valid PID for p_track < 2 GeV
         {
           MDzeroUPC.Dtrk1PionScore->push_back(GetPIDScore(
             MDzero.Dtrk1P[iD], MDzero.Dtrk1dedx[iD],
@@ -370,6 +369,10 @@ int main(int argc, char *argv[]) {
           MDzeroUPC.Dtrk1ProtScore->push_back(GetPIDScore(
             MDzero.Dtrk1P[iD], MDzero.Dtrk1dedx[iD],
             fdedxProtCenter, fdedxProtSigmaLo, fdedxProtSigmaHi));
+        } else {
+          MDzeroUPC.Dtrk1PionScore->push_back(-999.);
+          MDzeroUPC.Dtrk1KaonScore->push_back(-999.);
+          MDzeroUPC.Dtrk1ProtScore->push_back(-999.);
         }
         MDzeroUPC.Dtrk1MassHypo->push_back(MDzero.Dtrk1MassHypo[iD]);
         MDzeroUPC.Dtrk1PixelHit->push_back(MDzero.Dtrk1PixelHit[iD]);
@@ -390,6 +393,10 @@ int main(int argc, char *argv[]) {
           MDzeroUPC.Dtrk2ProtScore->push_back(GetPIDScore(
             MDzero.Dtrk2P[iD], MDzero.Dtrk2dedx[iD],
             fdedxProtCenter, fdedxProtSigmaLo, fdedxProtSigmaHi));
+        } else {
+          MDzeroUPC.Dtrk2PionScore->push_back(-999.);
+          MDzeroUPC.Dtrk2KaonScore->push_back(-999.);
+          MDzeroUPC.Dtrk2ProtScore->push_back(-999.);
         }
         MDzeroUPC.Dtrk2MassHypo->push_back(MDzero.Dtrk2MassHypo[iD]);
         MDzeroUPC.Dtrk2PixelHit->push_back(MDzero.Dtrk2PixelHit[iD]);
