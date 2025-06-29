@@ -19,7 +19,7 @@ process.HiForestInfo.info = cms.vstring("HiForest, miniAOD, 150X, data")
 process.source = cms.Source("PoolSource",
     duplicateCheckMode = cms.untracked.string("noDuplicateCheck"),
     fileNames = cms.untracked.vstring(
-         '/store/user/wangj/Hijing_MinimumBias_b015_OO_5362GeV/MINIAOD_250518_el8_Run3_2025_OXY_1506/250520_104022/0000/miniaod_PAT_1.root'
+         'file:/eos/cms/store/group/phys_heavyions/wangj/RECO2025/miniaod_PhysicsIonPhysics0_393767/reco_run393767_ls0021_streamPhysicsIonPhysics0_StorageManager.root'
     ),
 )
 
@@ -99,33 +99,33 @@ process.load("HeavyIonsAnalysis.MuonAnalysis.muonAnalyzer_cfi")
 #########################
 # ZDC RecHit Producer && Analyzer
 #########################
-## to prevent crash related to HcalSeverityLevelComputerRcd record
-#process.load("RecoLocalCalo.HcalRecAlgos.hcalRecAlgoESProd_cfi")
-#process.load('HeavyIonsAnalysis.ZDCAnalysis.ZDCAnalyzersPbPb_cff')
-#
-## =============================================================================
-## ==================== modification needed for the fsc data ===================
-#from CondCore.CondDB.CondDB_cfi import *
-#process.es_pool = cms.ESSource("PoolDBESSource",
-#    toGet = cms.VPSet(
-#        cms.PSet(
-#            record = cms.string("HcalElectronicsMapRcd"),
-#            tag = cms.string("HcalElectronicsMap_v10.0_offline")
-#        )
-#    ),
-#    connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-#)
-#process.es_prefer = cms.ESPrefer('HcalTextCalibrations', 'es_ascii')
-#process.es_ascii = cms.ESSource(
-#    'HcalTextCalibrations',
-#    input = cms.VPSet(
-#        cms.PSet(
-#            object = cms.string('ElectronicsMap'),
-#            file = cms.FileInPath("emap_2025_full.txt")
-#        )
-#    )
-#)
-## =============================================================================
+# to prevent crash related to HcalSeverityLevelComputerRcd record
+process.load("RecoLocalCalo.HcalRecAlgos.hcalRecAlgoESProd_cfi")
+process.load('HeavyIonsAnalysis.ZDCAnalysis.ZDCAnalyzersPbPb_cff')
+
+# =============================================================================
+# ==================== modification needed for the fsc data ===================
+from CondCore.CondDB.CondDB_cfi import *
+process.es_pool = cms.ESSource("PoolDBESSource",
+    toGet = cms.VPSet(
+        cms.PSet(
+            record = cms.string("HcalElectronicsMapRcd"),
+            tag = cms.string("HcalElectronicsMap_v10.0_offline")
+        )
+    ),
+    connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+)
+process.es_prefer = cms.ESPrefer('HcalTextCalibrations', 'es_ascii')
+process.es_ascii = cms.ESSource(
+    'HcalTextCalibrations',
+    input = cms.VPSet(
+        cms.PSet(
+            object = cms.string('ElectronicsMap'),
+            file = cms.FileInPath("emap_2025_full.txt")
+        )
+    )
+)
+# =============================================================================
 
 ###############################################################################
 # main forest sequence
@@ -138,8 +138,8 @@ process.forest = cms.Path(
     process.l1MetFilterRecoTree +
     process.trackSequencePP +
     process.particleFlowAnalyser +
-    process.hiEvtAnalyzer #+
-#    process.zdcSequencePbPb
+    process.hiEvtAnalyzer +
+    process.zdcSequencePbPb
 #    process.ggHiNtuplizer +
 #    process.unpackedMuons +
 #    process.muonAnalyzer
