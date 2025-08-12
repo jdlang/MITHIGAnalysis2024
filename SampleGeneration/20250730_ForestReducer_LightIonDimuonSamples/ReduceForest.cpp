@@ -39,8 +39,8 @@ int main(int argc, char *argv[])
    int Year                           = CL.GetInt("Year", 2025);
    bool IsBackground                  = CL.GetBool("IsBackground", false);
    double Fraction                    = CL.GetDouble("Fraction", 1.00);
-   double MinZPT                      = CL.GetDouble("MinZPT", 20);
-   double MinTrackPT                  = CL.GetDouble("MinTrackPT", 1);
+   double MinZPT                      = CL.GetDouble("MinZPT", 0);
+   double MinTrackPT                  = CL.GetDouble("MinTrackPT", 0.3);
    bool DoAlternateTrackSelection     = CL.GetBool("DoAlternateTrackSelection", false);
    int AlternateTrackSelection        = DoAlternateTrackSelection ? CL.GetInt("AlternateTrackSelection") : 0;
    bool DoSumET                       = CL.GetBool("DoSumET", false);
@@ -57,7 +57,6 @@ int main(int argc, char *argv[])
    TrkEff2017pp *TrackEfficiencyPP2017 = nullptr;
    TrkEff2018PbPb *TrackEfficiencyPbPb2018 = nullptr;
    TrkEff2023PbPb *TrackEfficiencyPbPb2023 = nullptr;
-//   TrkEff2025OO *TrackEfficiencyOO2025 = nullptr;
    if(DoGenLevel == false)
    {
       if(IsPP == true && (Year == 2017 || Year == 2018))   // 2018 does not have pp ref but for convenience
@@ -76,6 +75,17 @@ int main(int argc, char *argv[])
       else if(IsPP == false && Year == 2023)
       {
          if(DoAlternateTrackSelection == false)
+            TrackEfficiencyPbPb2023 = new TrkEff2023PbPb("general", "", false, TrackEfficiencyPath);
+         if(DoAlternateTrackSelection == true && AlternateTrackSelection == 0)
+            TrackEfficiencyPbPb2023 = new TrkEff2023PbPb("general", "", false, TrackEfficiencyPath);
+         if(DoAlternateTrackSelection == true && AlternateTrackSelection == 1)
+            TrackEfficiencyPbPb2023 = new TrkEff2023PbPb("general", "Loose", false, TrackEfficiencyPath);
+         if(DoAlternateTrackSelection == true && AlternateTrackSelection == 2)
+            TrackEfficiencyPbPb2023 = new TrkEff2023PbPb("general", "Tight", false, TrackEfficiencyPath);
+      }
+      else if(IsPP == true && Year == 2024) // Temp for checking ppRef
+      {
+        if(DoAlternateTrackSelection == false)
             TrackEfficiencyPbPb2023 = new TrkEff2023PbPb("general", "", false, TrackEfficiencyPath);
          if(DoAlternateTrackSelection == true && AlternateTrackSelection == 0)
             TrackEfficiencyPbPb2023 = new TrkEff2023PbPb("general", "", false, TrackEfficiencyPath);
@@ -126,8 +136,8 @@ int main(int argc, char *argv[])
       TriggerTreeMessenger     MTrigger(InputFile);
       
       int EntryCount = MEvent.GetEntries() * Fraction;
-      ProgressBar Bar(cout, EntryCount);
-      Bar.SetStyle(-1);
+//      ProgressBar Bar(cout, EntryCount);
+//      Bar.SetStyle(-1);
       
       /////////////////////////////////
       //////// Main Event Loop ////////
@@ -135,11 +145,11 @@ int main(int argc, char *argv[])
 
       for(int iE = 0; iE < EntryCount; iE++)
       {
-         if(EntryCount < 300 || (iE % (EntryCount / 250)) == 0)
-         {
-            Bar.Update(iE);
-            Bar.Print();
-         }
+//         if(EntryCount < 300 || (iE % (EntryCount / 250)) == 0)
+//         {
+//            Bar.Update(iE);
+//            Bar.Print();
+//         }
          
          MEvent.GetEntry(iE);
          MGen.GetEntry(iE);
@@ -223,7 +233,9 @@ int main(int argc, char *argv[])
                int HLT_HIL2Mu12_2018 = MTrigger.CheckTriggerStartWith("HLT_HIL2Mu12");
                int HLT_HIL3Mu12_2018 = MTrigger.CheckTriggerStartWith("HLT_HIL3Mu12");
                int HLT_HIL3Mu12_2023 = MTrigger.CheckTriggerStartWith("HLT_HIL3SingleMu12");
-               if(HLT_HIL3Mu12_2018 == 0 && HLT_HIL2Mu12_2018 == 0 && HLT_HIL3Mu12_2023 == 0)
+               int HLT_PPRefL2Mu7_2024 = MTrigger.CheckTriggerStartWith("HLT_PPRefL2SingleMu7");
+               int HLT_OxyMuOpen_2025 = MTrigger.CheckTriggerStartWith("HLT_OxyL1SingleMuOpen");
+               if(HLT_HIL3Mu12_2018 == 0 && HLT_HIL2Mu12_2018 == 0 && HLT_HIL3Mu12_2023 == 0 && HLT_PPRefL2Mu7_2024 == 0 && HLT_OxyMuOpen_2025 == 0)
                   continue;
 
                MZHadron.NCollWeight = 1;
@@ -660,9 +672,9 @@ int main(int argc, char *argv[])
          MZHadron.FillEntry();
       }
    
-      Bar.Update(EntryCount);
-      Bar.Print();
-      Bar.PrintLine();
+//      Bar.Update(EntryCount);
+//      Bar.Print();
+//      Bar.PrintLine();
    
       InputFile.Close();
    }

@@ -10,7 +10,7 @@ TAG="Skim_2025_NeNe_PromptReco_ZDiMu_IonPhysics${PD}"
 NAME="${DATE}_${TAG}"
 FILELIST="filelist_2025_NeNe_PromptReco_ZDiMu_IonPhysics${PD}.txt"
 OUTPUT="/data/jdlang/Run3_2025_LightIon_ZDiMu/SkimsData/output_$NAME"
-MERGEDOUTPUT="/data/jdlang/Run3_2025_LightIon_ZDiMu/SkimsData/$NAME.root"
+MERGEDOUTPUT="/data/jdlang/Run3_2025_LightIon_ZDiMu/SkimsData/$TAG.root"
 rm $MERGEDOUTPUT &> /dev/null
 
 # Function to monitor active processes
