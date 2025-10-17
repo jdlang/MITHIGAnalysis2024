@@ -15,7 +15,7 @@ float GetPIDScore(
   bool logdedx = true
 ) {
   float PIDScore;
-  if (logdedx) p = TMath::Log(p);
+  if (logdedx) dedx = TMath::Log(dedx);
   float dedxCenter = fCenter->Eval(p);
   if (dedx < dedxCenter)
     PIDScore = (dedx - dedxCenter) / (dedxCenter - fSigmaLo->Eval(p));
@@ -88,11 +88,9 @@ void PIDScoring() {
   
   // Set this to the ORIGINAL skim file without PID:
   TString fileSourcePath;
-  //fileSourcePath = "/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250619_Skim_2023Data_Feb2025ReReco_HIForward0-9.root";
   fileSourcePath = "/data00/jdlang/UPCD0LowPtAnalysis/SkimsMC/20250619_Skim_2023MC_Feb2025ReReco_PhotonBeamB_forcedDecays.root";
   // Set this to the path for the copy of the above file that will include PID:
   TString filePIDPath;
-  //filePIDPath = "/data00/jdlang/UPCD0LowPtAnalysis/SkimsData/20250619_Skim_2023Data_Feb2025ReReco_HIForward0-9_PID.root";
   filePIDPath = "/data00/jdlang/UPCD0LowPtAnalysis/SkimsMC/20250619_Skim_2023MC_Feb2025ReReco_PhotonBeamB_forcedDecays_PID.root";
   
   std::cout<<"Getting root files..."<<std::endl;
