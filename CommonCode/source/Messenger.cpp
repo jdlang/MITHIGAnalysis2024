@@ -3089,6 +3089,8 @@ DzeroUPCTreeMessenger::~DzeroUPCTreeMessenger()
       delete DpassCutSystDsvpvSig;
       delete DpassCutSystDtrkPt;
       delete DpassCutSystDalpha;
+      delete DpassCutSystDalphaOnly;
+      delete DpassCutSystDdtheta;
       delete DpassCutSystDchi2cl;
       delete Dy;
       delete Dmass;
@@ -3161,6 +3163,8 @@ bool DzeroUPCTreeMessenger::Initialize(bool Debug)
    DpassCutSystDsvpvSig = nullptr;
    DpassCutSystDtrkPt = nullptr;
    DpassCutSystDalpha = nullptr;
+   DpassCutSystDalphaOnly = nullptr;
+   DpassCutSystDdtheta = nullptr;
    DpassCutSystDchi2cl = nullptr;
    Dy = nullptr;
    Dmass = nullptr;
@@ -3280,6 +3284,8 @@ bool DzeroUPCTreeMessenger::Initialize(bool Debug)
    if(Tree->GetBranch("DpassCutSystDsvpvSig")) Tree->SetBranchAddress("DpassCutSystDsvpvSig", &DpassCutSystDsvpvSig);
    if(Tree->GetBranch("DpassCutSystDtrkPt")) Tree->SetBranchAddress("DpassCutSystDtrkPt", &DpassCutSystDtrkPt);
    if(Tree->GetBranch("DpassCutSystDalpha")) Tree->SetBranchAddress("DpassCutSystDalpha", &DpassCutSystDalpha);
+   if(Tree->GetBranch("DpassCutSystDalphaOnly")) Tree->SetBranchAddress("DpassCutSystDalphaOnly", &DpassCutSystDalphaOnly);
+   if(Tree->GetBranch("DpassCutSystDdtheta")) Tree->SetBranchAddress("DpassCutSystDdtheta", &DpassCutSystDdtheta);
    if(Tree->GetBranch("DpassCutSystDchi2cl")) Tree->SetBranchAddress("DpassCutSystDchi2cl", &DpassCutSystDchi2cl);
    Tree->SetBranchAddress("Dgen", &Dgen);
    Tree->SetBranchAddress("DisSignalCalc", &DisSignalCalc);
@@ -3332,6 +3338,8 @@ bool DzeroUPCTreeMessenger::SetBranch(TTree *T)
    DpassCutSystDsvpvSig = new std::vector<bool>();
    DpassCutSystDtrkPt = new std::vector<bool>();
    DpassCutSystDalpha = new std::vector<bool>();
+   DpassCutSystDalphaOnly = new std::vector<bool>();
+   DpassCutSystDdtheta = new std::vector<bool>();
    DpassCutSystDchi2cl = new std::vector<bool>();
    Dy = new std::vector<float>();
    Dmass = new std::vector<float>();
@@ -3453,6 +3461,8 @@ bool DzeroUPCTreeMessenger::SetBranch(TTree *T)
    Tree->Branch("DpassCutSystDsvpvSig",  &DpassCutSystDsvpvSig);
    Tree->Branch("DpassCutSystDtrkPt",    &DpassCutSystDtrkPt);
    Tree->Branch("DpassCutSystDalpha",    &DpassCutSystDalpha);
+   Tree->Branch("DpassCutSystDalphaOnly",&DpassCutSystDalphaOnly);
+   Tree->Branch("DpassCutSystDdtheta",   &DpassCutSystDdtheta);
    Tree->Branch("DpassCutSystDchi2cl",   &DpassCutSystDchi2cl);
    Tree->Branch("Dgen",                  &Dgen);
    Tree->Branch("DisSignalCalc",         &DisSignalCalc);
@@ -3546,6 +3556,8 @@ void DzeroUPCTreeMessenger::Clear()
    DpassCutSystDsvpvSig->clear();
    DpassCutSystDtrkPt->clear();
    DpassCutSystDalpha->clear();
+   DpassCutSystDalphaOnly->clear();
+   DpassCutSystDdtheta->clear();
    DpassCutSystDchi2cl->clear();
    Dgen->clear();
    DisSignalCalc->clear();
@@ -3634,6 +3646,8 @@ void DzeroUPCTreeMessenger::CopyNonTrack(DzeroUPCTreeMessenger &M)
    if(DpassCutSystDsvpvSig != nullptr && M.DpassCutSystDsvpvSig != nullptr)   *DpassCutSystDsvpvSig = *(M.DpassCutSystDsvpvSig);
    if(DpassCutSystDtrkPt != nullptr && M.DpassCutSystDtrkPt != nullptr)   *DpassCutSystDtrkPt = *(M.DpassCutSystDtrkPt);
    if(DpassCutSystDalpha != nullptr && M.DpassCutSystDalpha != nullptr)   *DpassCutSystDalpha = *(M.DpassCutSystDalpha);
+   if(DpassCutSystDalphaOnly != nullptr && M.DpassCutSystDalphaOnly != nullptr)   *DpassCutSystDalphaOnly = *(M.DpassCutSystDalphaOnly);
+   if(DpassCutSystDdtheta != nullptr && M.DpassCutSystDdtheta != nullptr)   *DpassCutSystDdtheta = *(M.DpassCutSystDdtheta);
    if(DpassCutSystDchi2cl != nullptr && M.DpassCutSystDchi2cl != nullptr)   *DpassCutSystDchi2cl = *(M.DpassCutSystDchi2cl);
    if(Dgen != nullptr && M.Dgen != nullptr)   *Dgen = *(M.Dgen);
    if(DisSignalCalc != nullptr && M.DisSignalCalc != nullptr)   *DisSignalCalc = *(M.DisSignalCalc);

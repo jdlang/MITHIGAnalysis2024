@@ -955,6 +955,8 @@ public:
    std::vector<bool> *DpassCutSystDsvpvSig;
    std::vector<bool> *DpassCutSystDtrkPt;
    std::vector<bool> *DpassCutSystDalpha;
+   std::vector<bool> *DpassCutSystDalphaOnly;
+   std::vector<bool> *DpassCutSystDdtheta;
    std::vector<bool> *DpassCutSystDchi2cl;
    std::vector<int> *Dgen;
    std::vector<bool> *DisSignalCalc;
