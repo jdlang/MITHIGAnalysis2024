@@ -22,9 +22,9 @@ using namespace std;
 #include "WeightHandler1D.h"
 
 #define DMASS 1.86484
-#define DMASSMIN 1.66
-#define DMASSMAX 2.26
-#define DMASSNBINS 48
+#define DMASSMIN 1.68
+#define DMASSMAX 2.05
+#define DMASSNBINS 74
 
 //============================================================//
 // Function to check for configuration errors
