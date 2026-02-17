@@ -4367,7 +4367,13 @@ bool DzeroUPCMicroTreeMessenger::Initialize(bool Debug)
    CheckAndSetBranch(Tree, ZDCsumPlus);
    CheckAndSetBranch(Tree, ZDCsumMinus);
    CheckAndSetBranch(Tree, HFEMaxPlus);
+   CheckAndSetBranch(Tree, HFEMaxPlus_forest);
+   CheckAndSetBranch(Tree, HFEMaxPlus_eta5);
+   CheckAndSetBranch(Tree, HFEMaxPlus_pt0p1);
    CheckAndSetBranch(Tree, HFEMaxMinus);
+   CheckAndSetBranch(Tree, HFEMaxMinus_forest);
+   CheckAndSetBranch(Tree, HFEMaxMinus_eta5);
+   CheckAndSetBranch(Tree, HFEMaxMinus_pt0p1);
    CheckAndSetBranch(Tree, ZDCgammaN);
    CheckAndSetBranch(Tree, ZDCNgamma);
    CheckAndSetBranch(Tree, gapgammaN);

@@ -366,8 +366,8 @@ int main(int argc, char *argv[])
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
   leg->SetTextSize(0.035);
-//  leg->AddEntry(gr, "2025 Data", "P");
-  leg->AddEntry(gr, "2023 Data, Reforested", "LP");
+//  leg->AddEntry(gr, "2025 Data", "PE");
+  leg->AddEntry(gr, "2023 Data, Reforested", "PE");
   
   if (MinDzeroPT == 2 && MaxDzeroPT == 5) {
     if (IsGammaN) drawPubCurves_CMSHIN25002_pt2to5_gammaN(leg);
@@ -406,7 +406,7 @@ int main(int argc, char *argv[])
   delete hFrame;
 
   /////////////////////////////////
-  // 2.1 Plot Raw Yield (iff Dpt 5-8)
+  // 2.5 Plot Raw Yield (iff Dpt 5-8)
   /////////////////////////////////
   if (MinDzeroPT == 5 && MaxDzeroPT == 8) {
     TGraphErrors* gRawYield = new TGraphErrors(4, yValues.data(), rawYieldValues.data(), yErrors.data(), rawYieldErrors.data());

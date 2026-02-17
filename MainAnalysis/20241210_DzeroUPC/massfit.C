@@ -167,13 +167,15 @@ struct SignalParams : public ParamsBase {
   RooRealVar sigma2;
   RooRealVar frac1;
   RooRealVar alpha;
+  RooRealVar width;
 
   SignalParams() :
     mean("sig_mean", "[signal] mean", DMASS, DMASS - 0.015, DMASS + 0.015),
-    sigma1("sig_sigma1", "[signal] width of first Gaussian", 0.03, 0.0048, 0.155),
-    sigma2("sig_sigma2", "[signal] width of second Gaussian", 0.01, 0.0048, 0.0465),
+    sigma1("sig_sigma1", "[signal] width of first Gaussian", 0.03, 0.008, 0.1),
+    sigma2("sig_sigma2", "[signal] width of second Gaussian", 0.01, 0.008, 0.03),
     frac1("sig_frac1", "[signal] fraction of first Gaussian", 0.1, 0.001, 0.5),
-    alpha("sig_alpha", "[signal] modification to data Gaussian width", 0.0, 0., 0.0)
+    alpha("sig_alpha", "[signal] modification to data Gaussian width", 0.0, 0.0, 0.0),
+    width("sig_width", "[signal] overall width ratio", 1.0, 0.6, 1.55)
   {
     // cout << "signal default" << endl;
     params[mean.GetName()] = &mean;
@@ -181,6 +183,8 @@ struct SignalParams : public ParamsBase {
     params[sigma2.GetName()] = &sigma2;
     params[frac1.GetName()] = &frac1;
     params[alpha.GetName()] = &alpha;
+    params[width.GetName()] = &width;
+    
   }
 
   SignalParams(string dat) : SignalParams() { readFromDat(dat); }
@@ -194,12 +198,16 @@ struct SignalParams : public ParamsBase {
       mean.setRange(DMASS - sigMeanRange, DMASS + sigMeanRange);
     }
     // Nominal model lets width of data Gaussian float
-//    if (sigAlphaRange > 0.)
-//    {
+    if (sigAlphaRange > 0.)
+    {
 //      alpha.setConstant(false);
 //      alpha.setRange(0.0, 0.0 + sigAlphaRange);
-//    }
-    alpha.setConstant(true);
+      width.setConstant(false);
+      width.setRange(0.6, 1.55);
+    }
+    else {
+      width.setConstant(true);
+    }
   }
 };
 
@@ -295,6 +303,7 @@ struct PeakingPiPiParams : public ParamsBase {
 struct EventParams {
   RooRealVar nsig;
   RooRealVar nbkg;
+  RooRealVar n3sigma;
 
   RooRealVar fswp;
   RooRealVar fpkkk;
@@ -321,6 +330,7 @@ struct EventParams {
     std::cout << "nswp: Formula = " << nswp.GetName() << ", Value = " << nswp.getVal() << "\n";
     std::cout << "npkkk: Formula = " << npkkk.GetName() << ", Value = " << npkkk.getVal() << "\n";
     std::cout << "npkpp: Formula = " << npkpp.GetName() << ", Value = " << npkpp.getVal() << "\n";
+    std::cout << "n3sigma: Value = " << n3sigma.getVal() << ", Error = " << n3sigma.getError() << ", is constant = " << n3sigma.isConstant() << "\n";
   }
 
   // Write to file
@@ -388,12 +398,13 @@ struct EventParams {
 
   // Constructor
   EventParams(double _nsig = 500, double _nbkg = 500,
-              double _fswp = 0.5, double _fpkkk = 0.5, double _fpkpp = 0.5)
+              double _fswp = 0.5, double _fpkkk = 0.5, double _fpkpp = 0.5, double _n3sigma = 500)
       : nsig("nsig", "number of signal events", _nsig, 0, _nsig * 5),
         nbkg("nbkg", "number of background events", _nbkg, 0, _nbkg * 5),
         fswp("fswp", "fswp", _fswp),
         fpkkk("fpkkk", "fpkkk", _fpkkk),
         fpkpp("fpkpp", "fpkpp", _fpkpp),
+        n3sigma("n3sigma", "n3sigma", _n3sigma),
         nswpPtr(std::make_unique<RooFormulaVar>("nswp", "nswp", "@0*@1", RooArgList(nsig, fswp))),
         npkkkPtr(std::make_unique<RooFormulaVar>("npkkk", "npkkk", "@0*@1", RooArgList(nsig, fpkkk))),
         npkppPtr(std::make_unique<RooFormulaVar>("npkpp", "npkpp", "@0*@1", RooArgList(nsig, fpkpp))),
@@ -414,6 +425,7 @@ struct EventParams {
       fswp = other.fswp.getValV();
       fpkkk = other.fpkkk.getValV();
       fpkpp = other.fpkpp.getValV();
+      n3sigma = other.n3sigma.getValV();
 
       // No reassignment of pointers and references is needed, since they're bounded as how they should be
     }
@@ -501,7 +513,7 @@ void sigswpmc_fit(TTree *mctree, string rstDir,
   latex.DrawLatex(xpos, ypos - 1 * ypos_step, Form("Sigma1 (Signal): %.3f #pm %.3f", sigl.sigma1.getVal(), sigl.sigma1.getError()));
   latex.DrawLatex(xpos, ypos - 2 * ypos_step, Form("Sigma2 (Signal): %.3f #pm %.3f", sigl.sigma2.getVal(), sigl.sigma2.getError()));
   latex.DrawLatex(xpos, ypos - 3 * ypos_step, Form("Frac1 (Signal): %.3f #pm %.3f", sigl.frac1.getVal(), sigl.frac1.getError()));
-  latex.DrawLatex(xpos, ypos - 4 * ypos_step, Form("#alpha (Signal): %.3f #pm %.3f", sigl.alpha.getVal(), sigl.alpha.getError()));
+  latex.DrawLatex(xpos, ypos - 4 * ypos_step, Form("Width (Signal): %.3f #pm %.3f", sigl.width.getVal(), sigl.width.getError()));
   latex.DrawLatex(xpos, ypos - 5 * ypos_step, Form("Mean (Swap): %.3f #pm %.3f", swap.mean.getVal(), swap.mean.getError()));
   latex.DrawLatex(xpos, ypos - 6 * ypos_step, Form("Sigma (Swap): %.3f #pm %.3f", swap.sigma.getVal(), swap.sigma.getError()));
   latex.DrawLatex(xpos, ypos - 7 * ypos_step, Form("N_{Sig}: %.3f #pm %.3f", nsig.getVal(), nsig.getError()));
@@ -671,7 +683,7 @@ void main_fit(TTree *datatree, string rstDir, string output,
 
   std::cout << "[Info] Number of entries: " << data.sumEntries() << std::endl;
   
-  SignalParams sigl = SignalParams(siglmcdat, sigMeanRange, sigAlphaRange);
+  SignalParams sigl = SignalParams(siglmcdat, sigMeanRange, 1.);
   SwapParams swap = SwapParams(swapdat);
   PeakingKKParams pkkk = PeakingKKParams(pkkkdat);
   PeakingPiPiParams pkpp = PeakingPiPiParams(pkppdat);
@@ -701,12 +713,12 @@ void main_fit(TTree *datatree, string rstDir, string output,
   events.print();
 
   // Define the signal model: double Gaussian
-  RooFormulaVar sigma1alpha("sigma1alpha", "Signal width factor for first Gaussian",
-              "sig_sigma1 * (1 + sig_alpha)", RooArgList(sigl.sigma1, sigl.alpha));
-  RooFormulaVar sigma2alpha("sigma2alpha", "Signal width factor for second Gaussian",
-              "sig_sigma2 * (1 + sig_alpha)", RooArgList(sigl.sigma2, sigl.alpha));
-  RooGaussian gauss1("gauss1", "first Gaussian", m, sigl.mean, sigma1alpha);
-  RooGaussian gauss2("gauss2", "second Gaussian", m, sigl.mean, sigma2alpha);
+  RooFormulaVar sigma1width("sigma1width", "Signal width factor for first Gaussian",
+              "sig_sigma1 * sig_width", RooArgList(sigl.sigma1, sigl.width));
+  RooFormulaVar sigma2width("sigma2width", "Signal width factor for second Gaussian",
+              "sig_sigma2 * sig_width", RooArgList(sigl.sigma2, sigl.width));
+  RooGaussian gauss1("gauss1", "first Gaussian", m, sigl.mean, sigma1width);
+  RooGaussian gauss2("gauss2", "second Gaussian", m, sigl.mean, sigma2width);
   RooAddPdf siglPDF("signal", "signal model", RooArgList(gauss1, gauss2), sigl.frac1);
 
   // Define the background model: (Nominal) Exponential (Systematics) Chebychev polynomial
@@ -755,6 +767,8 @@ void main_fit(TTree *datatree, string rstDir, string output,
   ws.import(swapPDF); // Swap PDF
   if (doPkkk) ws.import(pkkkPDF); // Peaking KK PDF
   if (doPkpp) ws.import(pkppPDF); // Peaking PiPi PDF
+  
+  double nSig3Sigma = data.sumEntries("x > 1.795 && x < 1.935");
 
   // Optionally, add the fit result
   if (result) {
@@ -811,7 +825,6 @@ void main_fit(TTree *datatree, string rstDir, string output,
   legend->Draw();
   
   canvas->SaveAs(Form("%s/fit_result_full_legend.pdf", rstDir.c_str()));
-  
   TLatex latex;
   latex.SetTextSize(0.03);
   latex.SetNDC();
@@ -826,7 +839,7 @@ void main_fit(TTree *datatree, string rstDir, string output,
   }
   latex.DrawLatex(xpos, ypos - (lineCount++) * ypos_step, Form("Mean = %.3f #pm %.3f (%s)", sigl.mean.getVal(), sigl.mean.getError(),
                                                     sigl.mean.isConstant()? "fixed": "float" ));
-  latex.DrawLatex(xpos, ypos - (lineCount++) * ypos_step, Form("#alpha_{Sig} = %.3f #pm %.3f (%s)", sigl.alpha.getVal(), sigl.alpha.getError(), sigl.alpha.isConstant()? "fixed": "float" ));
+  latex.DrawLatex(xpos, ypos - (lineCount++) * ypos_step, Form("Width = %.3f #pm %.3f (%s)", sigl.width.getVal(), sigl.width.getError(), sigl.width.isConstant()? "fixed": "float" ));
   latex.DrawLatex(xpos, ypos - (lineCount++) * ypos_step, Form("N_{Sig} = %.3f #pm %.3f", events.nsig.getVal(), events.nsig.getError()));
   latex.DrawLatex(xpos, ypos - (lineCount++) * ypos_step, Form("N_{Swap} = %.3f #pm %.3f", events.nswp.getVal(),
                                                     events.nswp.getPropagatedError(*result)));
@@ -835,6 +848,7 @@ void main_fit(TTree *datatree, string rstDir, string output,
   if (doPkpp) latex.DrawLatex(xpos, ypos - (lineCount++) * ypos_step, Form("N_{#pi#pi} = %.3f #pm %.3f", events.npkpp.getVal(),
                                                     events.npkpp.getPropagatedError(*result)));
   latex.DrawLatex(xpos, ypos - (lineCount++) * ypos_step, Form("N_{Comb} = %.3f #pm %.3f", events.nbkg.getVal(), events.nbkg.getError()));
+  latex.DrawLatex(xpos, ypos - (lineCount++) * ypos_step, Form("N_{Signal} = %.3f", nSig3Sigma));
   
   canvas->SaveAs(Form("%s/fit_result_full_param_legend.pdf", rstDir.c_str()));
   

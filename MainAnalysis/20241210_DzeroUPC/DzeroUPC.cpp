@@ -34,12 +34,12 @@ bool checkError(const Parameters &par) { return false; }
 //======= trackSelection =====================================//
 // Check if the track pass selection criteria
 //============================================================//
-bool dzeroSelection(DzeroUPCTreeMessenger *b, Parameters par, int j) { return true; }
+bool dzeroSelection(DzeroUPCMicroTreeMessenger *b, Parameters par, int j) { return true; }
 
 //======= eventSelection =====================================//
 // Check if the event pass eventSelection criteria
 //============================================================//
-bool eventSelection(DzeroUPCTreeMessenger *b, const Parameters &par) {
+bool eventSelection(DzeroUPCMicroTreeMessenger *b, const Parameters &par) {
   if (par.IsData)
   {
     if (par.TriggerChoice == 1 && b->isL1ZDCOr == false)
@@ -51,37 +51,43 @@ bool eventSelection(DzeroUPCTreeMessenger *b, const Parameters &par) {
   if (b->selectedBkgFilter == false || b->selectedVtxFilter == false)
     return false;
 
-  if (par.DoSystRapGap==-1)
-  {
-    // alternative (loose) rapidity gap selection
-    if (par.IsGammaN && b->gammaN_EThreshSyst15() == false)
+//  if (par.DoSystRapGap==-1)
+//  {
+//    // alternative (loose) rapidity gap selection
+//    if (par.IsGammaN && b->gammaN_EThreshSyst15() == false)
+//      return false;
+//    if (!par.IsGammaN && b->Ngamma_EThreshSyst15() == false)
+//      return false;
+//  }
+//  else if (par.DoSystRapGap==1)
+//  {
+//    // alternative (tight) rapidity gap selection
+//    if (par.IsGammaN && b->gammaN_EThreshSyst5p5() == false)
+//      return false;
+//    if (!par.IsGammaN && b->Ngamma_EThreshSyst5p5() == false)
+//      return false;
+//  } 
+//  else if (par.DoSystRapGap > 9) {
+//    // Custom rapidity gap threshold decision
+//    if (par.IsGammaN && b->gammaN_EThreshCustom(((float)par.DoSystRapGap)/10.) == false)
+//      return false;
+//    if (!par.IsGammaN && b->Ngamma_EThreshCustom(((float)par.DoSystRapGap)/10.) == false)
+//      return false;
+//  } 
+//  else
+//  {
+//    // nominal rapidity gap selection
+//    if (par.IsGammaN && (b->ZDCgammaN && b->gapgammaN) == false)
+//      return false;
+//    if (!par.IsGammaN && (b->ZDCNgamma && b->gapNgamma) == false)
+//      return false;
+//  }
+  
+  // nominal rapidity gap selection
+  if (par.IsGammaN && (b->ZDCgammaN && b->HFEMaxPlus_eta5 < 9.2) == false)
       return false;
-    if (!par.IsGammaN && b->Ngamma_EThreshSyst15() == false)
+  if (!par.IsGammaN && (b->ZDCNgamma && b->HFEMaxMinus_eta5 < 8.6) == false)
       return false;
-  }
-  else if (par.DoSystRapGap==1)
-  {
-    // alternative (tight) rapidity gap selection
-    if (par.IsGammaN && b->gammaN_EThreshSyst5p5() == false)
-      return false;
-    if (!par.IsGammaN && b->Ngamma_EThreshSyst5p5() == false)
-      return false;
-  } 
-  else if (par.DoSystRapGap > 9) {
-    // Custom rapidity gap threshold decision
-    if (par.IsGammaN && b->gammaN_EThreshCustom(((float)par.DoSystRapGap)/10.) == false)
-      return false;
-    if (!par.IsGammaN && b->Ngamma_EThreshCustom(((float)par.DoSystRapGap)/10.) == false)
-      return false;
-  } 
-  else
-  {
-    // nominal rapidity gap selection
-    if (par.IsGammaN && (b->ZDCgammaN && b->gapgammaN) == false)
-      return false;
-    if (!par.IsGammaN && (b->ZDCNgamma && b->gapNgamma) == false)
-      return false;
-  }
 
   if (b->nVtx >= 3) return false;
   return true;
@@ -91,7 +97,7 @@ class DataAnalyzer {
 public:
   TFile *inf, *outf;
   TH1D *hDmass;
-  DzeroUPCTreeMessenger *MDzeroUPC;
+  DzeroUPCMicroTreeMessenger *MDzeroUPC;
   TNtuple *nt;
   string title;
   TH2D *hHFEmaxPlus_vs_EvtMult;
@@ -104,7 +110,7 @@ public:
   TH1D *hRatioDEff;
 
   DataAnalyzer(const char *filename, const char *outFilename, const char *mytitle = "")
-      : inf(new TFile(filename)), MDzeroUPC(new DzeroUPCTreeMessenger(*inf, string("Tree"))), title(mytitle),
+      : inf(new TFile(filename)), MDzeroUPC(new DzeroUPCMicroTreeMessenger(*inf, string("Tree"))), title(mytitle),
         outf(new TFile(outFilename, "recreate")) {
     outf->cd();
     nt = new TNtuple("nt", "D0 mass tree", "Dmass:Dgen");
@@ -215,7 +221,7 @@ public:
             MDzeroUPC->Dtrk1StripHit != nullptr &&
             MDzeroUPC->Dtrk2PixelHit != nullptr &&
             MDzeroUPC->Dtrk2StripHit != nullptr) doTrkFilter = true;
-        for (unsigned long j = 0; j < MDzeroUPC->Dalpha->size(); j++) {
+        for (unsigned long j = 0; j < MDzeroUPC->Dsize; j++) {
           if (MDzeroUPC->Dpt->at(j) < par.MinDzeroPT)
             continue;
           if (MDzeroUPC->Dpt->at(j) > par.MaxDzeroPT)
@@ -257,8 +263,8 @@ public:
 
           // Fill HF E_max distributions for data
           if(doHFEmaxDistributions && par.IsData) {
-            hHFEmaxMinus_vs_EvtMult->Fill(MDzeroUPC->HFEMaxMinus, MDzeroUPC->nTrackInAcceptanceHP);
-            hHFEmaxPlus_vs_EvtMult->Fill(MDzeroUPC->HFEMaxPlus, MDzeroUPC->nTrackInAcceptanceHP);
+            hHFEmaxMinus_vs_EvtMult->Fill(MDzeroUPC->HFEMaxMinus_eta5, MDzeroUPC->nTrackInAcceptanceHP);
+            hHFEmaxPlus_vs_EvtMult->Fill(MDzeroUPC->HFEMaxPlus_eta5, MDzeroUPC->nTrackInAcceptanceHP);
           }
         } // end of reco-level Dzero loop
 
@@ -277,8 +283,8 @@ public:
             hDenDEff->Fill(1, GptGyWeight*MultWeight);
             // Fill HF E_max distributions for MC
             if(doHFEmaxDistributions) {
-              hHFEmaxMinus_vs_EvtMult->Fill(MDzeroUPC->HFEMaxMinus, MDzeroUPC->nTrackInAcceptanceHP);
-              hHFEmaxPlus_vs_EvtMult->Fill(MDzeroUPC->HFEMaxPlus, MDzeroUPC->nTrackInAcceptanceHP);
+              hHFEmaxMinus_vs_EvtMult->Fill(MDzeroUPC->HFEMaxMinus_eta5, MDzeroUPC->nTrackInAcceptanceHP);
+              hHFEmaxPlus_vs_EvtMult->Fill(MDzeroUPC->HFEMaxPlus_eta5, MDzeroUPC->nTrackInAcceptanceHP);
             }
           } // end of gen-level Dzero loop
         }   // end of gen-level Dzero loop

@@ -1,7 +1,6 @@
 {
   "FitDir": "MassFit",
   "luminosity": 1.096820881,
-  "PDFraction": 1.,
   "MicroTrees": [
     {
       "dataInput": "fullAnalysis/pt5-8_y-2--1_IsGammaN1/Data.root",

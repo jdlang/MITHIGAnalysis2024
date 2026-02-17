@@ -3,8 +3,6 @@
 FitSettingCard=${1}
 FitDir=$(jq -r '.FitDir' $FitSettingCard)
 luminosity=$(jq -r '.luminosity' $FitSettingCard)
-PDFraction=$(jq -r '.PDFraction' $FitSettingCard)
-luminosity=$(( $luminosity * $PDFraction ))
 
 # Extract the directory path for fullAnalysis
 MicroTreeDir=$(jq -r '.MicroTrees[0].dataInput' $FitSettingCard | grep -o '^[^/]*')
