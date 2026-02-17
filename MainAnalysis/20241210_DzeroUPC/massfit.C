@@ -40,9 +40,9 @@ using namespace RooFit;
 using namespace std;
 
 #define DMASS 1.86484
-#define DMASSMIN 1.66
-#define DMASSMAX 2.16
-#define DMASSNBINS 48
+#define DMASSMIN 1.68
+#define DMASSMAX 2.05
+#define DMASSNBINS 74
 
 struct ParamsBase {
   std::map<std::string, RooRealVar*> params; // Store RooRealVar objects
@@ -173,7 +173,7 @@ struct SignalParams : public ParamsBase {
     sigma1("sig_sigma1", "[signal] width of first Gaussian", 0.03, 0.0048, 0.155),
     sigma2("sig_sigma2", "[signal] width of second Gaussian", 0.01, 0.0048, 0.0465),
     frac1("sig_frac1", "[signal] fraction of first Gaussian", 0.1, 0.001, 0.5),
-    alpha("sig_alpha", "[signal] modification to data Gaussian width", 0.0, -0.25, 0.25)
+    alpha("sig_alpha", "[signal] modification to data Gaussian width", 0.0, 0., 0.0)
   {
     // cout << "signal default" << endl;
     params[mean.GetName()] = &mean;
@@ -194,11 +194,12 @@ struct SignalParams : public ParamsBase {
       mean.setRange(DMASS - sigMeanRange, DMASS + sigMeanRange);
     }
     // Nominal model lets width of data Gaussian float
-    if (sigAlphaRange > 0.)
-    {
-      alpha.setConstant(false);
-      alpha.setRange(0.0, 0.0 + sigAlphaRange);
-    }
+//    if (sigAlphaRange > 0.)
+//    {
+//      alpha.setConstant(false);
+//      alpha.setRange(0.0, 0.0 + sigAlphaRange);
+//    }
+    alpha.setConstant(true);
   }
 };
 
